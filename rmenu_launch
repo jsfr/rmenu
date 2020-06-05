@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+APP_SOURCES=(
+    "/Applications"
+    "$HOME/Applications"
+    "/System/Applications"
+    "/System/Applications/Utilities"
+)
+
+PREF_SOURCES=(
+    "/Library/PreferencePanes"
+    "$HOME/Library/PreferencePanes"
+    "/System/Library/PreferencePanes"
+)
+
+APPS=$(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sed 's:.*/\(.*\)\.app:\1:')
+PREF=$(fd . -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
+
+history_file=./history_test
+sort_hist=./target/release/sort_hist
+update_hist=./target/release/update_hist
+
+to_run=$(cat <(echo "$APPS") <(echo "$PREF") | xargs $sort_hist $history_file | xmenu "$@")
+
+if [[ -z $to_run ]]; then
+    exit
+fi
+
+if grep "$to_run" <<<"$APPS" &>/dev/null; then
+    open -a "$to_run"
+else
+    to_run=$(fd "$to_run" -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}")
+    open -b com.apple.systempreferences "$to_run"
+fi
+
+$update_hist $history_file $to_run
