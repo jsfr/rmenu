@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+if [ -d "$cachedir" ]; then
+    mkdir -p "$cachedir/rmenu" &>/dev/null
+    history_file="$cachedir/rmenu/run_history"
+else
+    history_file="$HOME/.rmenu_run_history" # if no xdg dir, fall back to dotfile in ~
+fi
+
+if [ ! -f "$history_file" ]; then
+    touch "$history_file"
+fi
+
 APP_SOURCES=(
     "/Applications"
     "$HOME/Applications"
@@ -16,11 +28,10 @@ PREF_SOURCES=(
 APPS=$(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sed 's:.*/\(.*\)\.app:\1:')
 PREF=$(fd . -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
 
-history_file=./history_test
-sort_hist=./target/release/sort_hist
-update_hist=./target/release/update_hist
+sort_hist=~/Repos/rmenu/target/release/sort_hist
+update_hist=~/Repos/rmenu/target/release/update_hist
 
-to_run=$(cat <(echo "$APPS") <(echo "$PREF") | xargs $sort_hist $history_file | xmenu "$@")
+to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $sort_hist "$history_file" | xmenu "$@")
 
 if [[ -z $to_run ]]; then
     exit
@@ -33,4 +44,4 @@ else
     open -b com.apple.systempreferences "$to_run"
 fi
 
-$update_hist $history_file $to_run
+$update_hist "$history_file" "$to_run"

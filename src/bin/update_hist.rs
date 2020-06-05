@@ -12,7 +12,7 @@ struct Cli {
     #[structopt(parse(from_os_str))]
     path: std::path::PathBuf,
     /// The new entry to add to the history file
-    entry: String
+    entry: String,
 }
 
 fn main() -> Result<(), ExitFailure> {
@@ -22,7 +22,7 @@ fn main() -> Result<(), ExitFailure> {
     let entry = history_items.get(&args.entry);
     let n = match entry {
         Some(n) => *n + 1,
-        None => 1
+        None => 1,
     };
     history_items.insert(args.entry, n);
 
