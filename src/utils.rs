@@ -2,6 +2,10 @@ use exitfailure::ExitFailure;
 use failure::ResultExt;
 use std::collections::HashMap;
 use std::fmt::Write;
+use glutin::{PossiblyCurrent};
+
+extern crate gl;
+use gl::types::*;
 
 pub fn parse_history_file(path: &std::path::PathBuf) -> Result<HashMap<String, i32>, ExitFailure> {
     let content = std::fs::read_to_string(path)
@@ -45,4 +49,54 @@ pub fn write_history_file(
 
     Ok(std::fs::write(path, content)
         .with_context(|_| format!("failed to write content to `{}`.", path.to_string_lossy()))?)
+}
+
+pub fn parse_color(mut color_string: &str) -> Result<[f32; 4], ()> {
+    if color_string.starts_with("#") {
+        // TODO handle possible exception here better than .unwrap()
+        color_string = color_string.get(1..).unwrap();
+    }
+
+    // TODO can we avoid the extra String here and keep a &str pointer?
+    let color_string_adjusted = match color_string.len() {
+        3 => {
+            let color_bytes = color_string.as_bytes();
+            let [r,g,b] = [color_bytes[0] as char, color_bytes[1] as char, color_bytes[2] as char];
+            format!("{0}{0}{1}{1}{2}{2}", r, g, b)
+        }
+        6 => color_string.to_owned(),
+        _ => return Err(())
+    };
+
+
+    let mut bytes = [0u8; 3];
+    hex::decode_to_slice(color_string_adjusted, &mut bytes as &mut [u8]);
+
+    let color = [
+        bytes[0] as f32 / 255.0,
+        bytes[1] as f32 / 255.0,
+        bytes[2] as f32 / 255.0,
+        1.0
+    ];
+
+    Ok(color)
+}
+
+pub struct Gl {}
+
+pub fn load_gl(gl_context: &glutin::Context<PossiblyCurrent>) -> Gl {
+    // Load the OpenGL function pointers
+    // TODO: `as *const _` will not be needed once glutin is updated to the latest gl version
+    gl::load_with(|symbol| gl_context.get_proc_address(symbol) as *const _);
+
+    Gl {}
+}
+
+impl Gl {
+    pub fn clear(&self, color: [f32; 4]) {
+        unsafe {
+            gl::ClearColor(color[0], color[1], color[2], color[3]);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+    }
 }
