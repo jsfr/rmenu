@@ -1,8 +1,8 @@
 use exitfailure::ExitFailure;
 use failure::ResultExt;
+use glutin::PossiblyCurrent;
 use std::collections::HashMap;
 use std::fmt::Write;
-use glutin::{PossiblyCurrent};
 
 extern crate gl;
 use gl::types::*;
@@ -61,13 +61,16 @@ pub fn parse_color(mut color_string: &str) -> Result<[f32; 4], ()> {
     let color_string_adjusted = match color_string.len() {
         3 => {
             let color_bytes = color_string.as_bytes();
-            let [r,g,b] = [color_bytes[0] as char, color_bytes[1] as char, color_bytes[2] as char];
+            let [r, g, b] = [
+                color_bytes[0] as char,
+                color_bytes[1] as char,
+                color_bytes[2] as char,
+            ];
             format!("{0}{0}{1}{1}{2}{2}", r, g, b)
         }
         6 => color_string.to_owned(),
-        _ => return Err(())
+        _ => return Err(()),
     };
-
 
     let mut bytes = [0u8; 3];
     hex::decode_to_slice(color_string_adjusted, &mut bytes as &mut [u8]);
@@ -76,7 +79,7 @@ pub fn parse_color(mut color_string: &str) -> Result<[f32; 4], ()> {
         bytes[0] as f32 / 255.0,
         bytes[1] as f32 / 255.0,
         bytes[2] as f32 / 255.0,
-        1.0
+        1.0,
     ];
 
     Ok(color)
