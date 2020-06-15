@@ -40,8 +40,8 @@ fi
 if grep "$to_run" <<<"$APPS" &>/dev/null; then
     open -a "$to_run"
 else
-    to_run=$(fd "$to_run" -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}")
-    open -b com.apple.systempreferences "$to_run"
+    to_run_pref=$(fd "$to_run" -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}")
+    open -b com.apple.systempreferences "$to_run_pref"
 fi
 
 $update_hist "$history_file" "$to_run"

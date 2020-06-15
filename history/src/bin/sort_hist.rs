@@ -4,7 +4,7 @@ use std::io;
 use std::io::prelude::*;
 use structopt::StructOpt;
 
-use utils::parse_history_file;
+use history::parse_history_file;
 
 /// Sorts a list of items based on a history file.
 #[derive(StructOpt)]

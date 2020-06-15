@@ -1,8 +1,7 @@
 use exitfailure::ExitFailure;
 use structopt::StructOpt;
 
-use utils::parse_history_file;
-use utils::write_history_file;
+use history::{parse_history_file, write_history_file};
 
 /// Updates a history file based on a new entry
 #[derive(StructOpt)]

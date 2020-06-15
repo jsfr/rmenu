@@ -1,17 +1,10 @@
-[package]
-name = "rmenu"
-version = "0.1.0"
-authors = ["Jens Fredskov <jensfredskov@protonmail.ch>"]
-edition = "2018"
+[workspace]
+members = [
+    "history",
+    "rmenu",
+]
 
-[lib]
-name = "utils"
-path = "src/utils.rs"
-
-[dependencies]
-structopt = "*"
-failure = "*"
-exitfailure = "*"
-glutin = "*"
-gl = "*"
-hex = "*"
+# [profile.release]
+# lto = true
+# debug = 1
+# incremental = false
