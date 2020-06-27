@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
 use std::fmt::Write;
 
-// TODO:x generalize from RandomState to generic
+// TODO generalize from RandomState to generic
 pub type HistoryItems = HashMap<String, i32, RandomState>;
 
 pub fn parse_history_file(path: &std::path::PathBuf) -> Result<HistoryItems, ExitFailure> {
