@@ -28,8 +28,8 @@ PREF_SOURCES=(
 APPS=$(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sed 's:.*/\(.*\)\.app:\1:')
 PREF=$(fd . -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
 
-sort_hist=~/Repos/rmenu/target/release/sort_hist
-update_hist=~/Repos/rmenu/target/release/update_hist
+sort_hist=~/Repos/github.com/jsfr/rmenu/target/release/sort_hist
+update_hist=~/Repos/github.com/jsfr/rmenu/target/release/update_hist
 
 to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $sort_hist "$history_file" | xmenu "$@")
 
