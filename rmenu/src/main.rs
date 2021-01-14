@@ -1,161 +1,99 @@
-use exitfailure::ExitFailure;
-use glutin::dpi::PhysicalPosition;
-use glutin::dpi::PhysicalSize;
-use glutin::event::VirtualKeyCode;
-use glutin::event::{Event, WindowEvent};
-use glutin::event_loop::{ControlFlow, EventLoop};
-use glutin::platform::macos::{ActivationPolicy, WindowBuilderExtMacOS};
-use glutin::window::WindowBuilder;
-use glutin::{ContextBuilder};
-use structopt::StructOpt;
+use druid::{AppLauncher, WindowDesc, Widget, PlatformError, AppDelegate, DelegateCtx, WindowId, Data, Event, Env, Lens, WidgetExt, LensExt, Screen, Key, FontDescriptor, FontFamily};
+use druid::widget::Label;
+use druid_shell::WindowLevel;
+use druid::text::{BasicTextInput, EditAction, TextInput, ArcStr};
 
-use rmenu::{load_gl, parse_color};
-use std::io;
-use std::io::BufRead;
-use regex::Regex;
+// TODO: refactor this to be part of the configuration
+const PROMPT: Key<ArcStr> = Key::new("rmenu.prompt");
+const FONT: Key<FontDescriptor> = Key::new("rmenu.font_family");
 
-/// GUI-based fuzzy selector for an arbitrary list of inputs
-#[derive(StructOpt)]
-#[structopt(name = "rmenu", version = "0.1.0")]
-struct Cli {
-    /// Defines the normal background color.
-    /// accepted: #RGB, #RRGGBB
-    /// example: --nb #112233
-    #[structopt(long = "nb", default_value = "#000")]
-    normal_background: String,
-
-    /// Defines the normal foreground (text) color.
-    /// accepted: #RGB, #RRGGBB
-    /// example: --nf #112233
-    #[structopt(long = "nf", default_value = "#FFF")]
-    normal_foreground: String,
-
-    /// Defines the selected background color.
-    /// accepted: #RGB, #RRGGBB
-    /// example: --sb #112233
-    #[structopt(long = "sb", default_value = "#000")]
-    selected_background: String,
-
-    /// Defines the selected foreground (text) color.
-    /// accepted: #RGB, #RRGGBB
-    /// example: --sf #112233
-    #[structopt(long = "sf", default_value = "#FFF")]
-    selected_foreground: String,
+#[derive(Clone, Data, Default, Lens)]
+struct AppState {
+    text: String
 }
 
-// TODO: Make as many fields as possible into references for improved performance
-struct Selector {
-    selection_text: String,
-    selected_item: Option<String>,
-    items: Vec<String>,
-    visible_items: Vec<String>,
+struct Delegate {
+    input_handler: BasicTextInput
 }
 
-impl Selector {
-    pub fn new(items: Vec<String>) -> Selector {
-        Selector {
-            selection_text: String::new(),
-            selected_item: items.to_owned().get(0).map(|i| (*i).to_owned()),
-            items: items.to_owned(),
-            visible_items: items,
+impl Delegate {
+    pub fn new() -> Self {
+        Self {
+            input_handler: BasicTextInput::default()
         }
     }
 
-    pub fn push(&mut self, ch: char) {
-        self.selection_text.push(ch);
-        self.update_selection();
+    fn insert(&mut self, data: &mut AppState, chars: &String) {
+        let lens = druid::lens!(AppState, text);
+        let mut text = lens.get(data);
+        text.push_str(chars);
+        lens.put(data, text);
     }
 
-    pub fn pop(&mut self) {
-        self.selection_text.pop();
-        self.update_selection();
-    }
-
-    fn update_selection(&mut self) {
-        let pattern = format!(r"^.*{}.*$", self.selection_text);
-        let re = Regex::new(pattern.as_str()).unwrap();
-        self.visible_items = self.items.to_owned().into_iter().filter(|item| re.is_match(item)).collect();
-        self.selected_item = self.visible_items.get(0).map(|i| (*i).to_owned());
+    fn delete_backward(&mut self, data: &mut AppState) {
+        let lens = druid::lens!(AppState, text);
+        let mut text = lens.get(data);
+        text.pop();
+        lens.put(data, text);
     }
 }
 
-// TODO: fix all unwraps to provide ExitFailure's instead
-fn main() -> Result<(), ExitFailure> {
-    let args: Cli = Cli::from_args();
-    let event_loop = EventLoop::new();
-
-    let monitor = event_loop.primary_monitor();
-    let width = monitor.size().width;
-    let height = 30_f64 * monitor.scale_factor();
-
-    let window_builder = WindowBuilder::new()
-        .with_decorations(false)
-        .with_always_on_top(true)
-        .with_resizable(false)
-        .with_activation_policy(ActivationPolicy::Accessory)
-        .with_inner_size(PhysicalSize::new(width, height as u32))
-        .with_visible(false);
-
-    let windowed_context = ContextBuilder::new()
-        .build_windowed(window_builder, &event_loop)
-        .unwrap();
-
-    // It is essential to make the context current before calling `gl::load_with`.
-    let gl_window = unsafe { windowed_context.make_current().unwrap() };
-
-    // Load the gl context to render things
-    let gl = load_gl(&gl_window);
-
-    // Position the window at the top of the screen, set the background color and make it visible
-    gl.clear(parse_color(args.normal_background.as_str()).unwrap());
-    gl_window
-        .window()
-        .set_outer_position(PhysicalPosition::new(0, 0));
-    gl_window.window().set_visible(true);
-
-    let items = io::stdin()
-        .lock()
-        .lines()
-        .collect::<Result<Vec<String>, _>>()
-        .unwrap();
-    let mut selector = Selector::new(items);
-
-    event_loop.run(move |event, _, control_flow| {
-        // debug call to check out the events
-        // println!("{:?}", event);
-
-        *control_flow = ControlFlow::Wait;
-
+impl AppDelegate<AppState> for Delegate {
+    fn event(
+        &mut self,
+        _ctx: &mut DelegateCtx<'_>,
+        _window_id: WindowId,
+        event: Event,
+        data: &mut AppState,
+        _env: &Env
+    ) -> Option<Event> {
         match event {
-            Event::LoopDestroyed => {},
-            Event::WindowEvent { event, .. } => match event {
-                WindowEvent::KeyboardInput {
-                    device_id: _,
-                    input,
-                    is_synthetic,
-                } => {
-                    if is_synthetic {
-                        return
-                    }
-
-                    if let Some(code) = input.virtual_keycode {
-                        match code {
-                            VirtualKeyCode::Escape => *control_flow = ControlFlow::Exit,
-                            VirtualKeyCode::Back => selector.pop(),
-                            VirtualKeyCode::Return => *control_flow = ControlFlow::Exit,
-                            _ => {}
-                        }
+            Event::KeyDown(key_event) => {
+                if let Some(edit) = self.input_handler.handle_event(&key_event) {
+                    match edit {
+                        EditAction::Insert(chars) | EditAction::Paste(chars) => self.insert(data, &chars),
+                        EditAction::Backspace => self.delete_backward(data),
+                        _ => ()
                     }
                 }
-                WindowEvent::ReceivedCharacter(c) => selector.push(c),
-                // WindowEvent::Focused(false) |
-                WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                _ => {},
-            },
-            Event::RedrawRequested(_) => {
-                gl_window.swap_buffers().unwrap();
+                None
             }
-            _ => {},
+            _ => Some(event)
         }
-    });
+    }
+}
+
+fn build_ui() -> impl Widget<AppState> {
+    Label::new(|text: &String, env: &Env| format!("{} {}", env.get(PROMPT), text))
+        .with_font(FONT)
+        .lens(AppState::text)
+}
+
+fn main() -> Result<(), PlatformError> {
+    let display_rect = Screen::get_display_rect();
+
+    let window_position = display_rect.origin();
+    let window_size = (display_rect.width(), 30.0);
+
+    let window_desc = WindowDesc::new(build_ui)
+        .resizable(false)
+        .show_titlebar(false)
+        .set_position(window_position)
+        .window_size(window_size)
+        .set_level(WindowLevel::Modal);
+
+    let initial_state = AppState::default();
+
+    let delegate = Delegate::new();
+
+    AppLauncher::with_window(window_desc)
+        .delegate(delegate)
+        .configure_env(|env, _state| {
+            env.set(PROMPT, ">");
+            env.set(FONT, FontDescriptor::new(FontFamily::new_unchecked("JetBrains Mono")).with_size(14.0));
+        })
+        .use_simple_logger()
+        .launch(initial_state)?;
+
+    Ok(())
 }

@@ -1,10 +1,10 @@
 [package]
 name = "history"
 version = "0.1.0"
-authors = ["Jens Fredskov <jensfredskov@protonmail.ch>"]
+authors = ["Jens Fredskov <jsfr@users.noreply.github.com>"]
 edition = "2018"
 
 [dependencies]
-structopt = "*"
-failure = "*"
-exitfailure = "*"
+exitfailure = "0.5.1"
+failure = "0.1.8"
+structopt = "0.3.16"
