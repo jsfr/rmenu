@@ -1,7 +1,7 @@
 use exitfailure::ExitFailure;
 use failure::ResultExt;
-use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
+use std::collections::HashMap;
 use std::fmt::Write;
 
 // TODO generalize from RandomState to generic
