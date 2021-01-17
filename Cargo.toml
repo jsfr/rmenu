@@ -1,10 +1,9 @@
 [workspace]
-members = [
-    "history",
-    "rmenu",
-]
+members = ["history", "rmenu"]
 
-# [profile.release]
-# lto = true
-# debug = 1
-# incremental = false
+[profile.release]
+# Consider if this is better or worse. We want fast boot time not smaller
+# opt-level = 'z'
+lto = true
+panic = 'abort'
+codegen-units = 1

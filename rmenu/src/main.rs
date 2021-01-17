@@ -21,7 +21,7 @@ const BG_COLOR_NORMAL: Key<Color> = Key::new("rmenu.bg_color_normal");
 const FG_COLOR_SELECTION: Key<Color> = Key::new("rmenu.fg_color_selection");
 const FG_COLOR_NORMAL: Key<Color> = Key::new("rmenu.fg_color_normal");
 
-#[derive(Clone, Data, Lens, Debug)]
+#[derive(Clone, Data, Lens)]
 struct AppState {
     text: String,
     items: Vector<String>,
@@ -235,7 +235,6 @@ fn main() -> Result<(), ExitFailure> {
             env.set(FG_COLOR_SELECTION, Color::from_hex_str("#00FFFF").unwrap());
             env.set(FG_COLOR_NORMAL, Color::from_hex_str("#FFFFFF").unwrap());
         })
-        .use_simple_logger()
         .launch(initial_state)
         .context("Failed to start rmenu")?;
 
