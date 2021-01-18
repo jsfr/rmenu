@@ -186,18 +186,18 @@ fn parse_vector_string(src: &str) -> Result<Vector<String>, Error> {
 struct Cli {
     /// The items to select between, default to stdin
     #[structopt(parse(try_from_str = parse_vector_string))]
-    items: Vector<String>,
+    items: Option<Vector<String>>,
 }
 
 fn main() -> Result<(), ExitFailure> {
     let args: Cli = Cli::from_args();
 
-    let items = match args.items.len() {
-        0 => io::stdin()
+    let items = match args.items {
+        Some(i) if i.len() > 0 => Ok(i),
+        _ => io::stdin()
             .lock()
             .lines()
             .collect::<Result<Vector<String>, _>>(),
-        _ => Ok(args.items),
     }
     .context("failed to read items from stdin.")?;
 

@@ -11,4 +11,4 @@ druid = { git = "https://github.com/linebender/druid.git", features = ["im"] }
 druid-shell = { git = "https://github.com/linebender/druid.git" }
 exitfailure = "0.5.1"
 failure = "0.1.8"
-structopt = "0.3.16"
+structopt = "0.3.21"
