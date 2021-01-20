@@ -30,8 +30,9 @@ PREF=$(fd . -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}" | sed 's:.*/\(.*\)\
 
 sort_hist=~/Repos/github.com/jsfr/rmenu/target/release/sort_hist
 update_hist=~/Repos/github.com/jsfr/rmenu/target/release/update_hist
+rmenu=~/Repos/github.com/jsfr/rmenu/target/release/rmenu
 
-to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $sort_hist "$history_file" | xmenu "$@")
+to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $sort_hist "$history_file" | $rmenu "$@")
 
 if [[ -z $to_run ]]; then
     exit

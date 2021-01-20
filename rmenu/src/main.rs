@@ -3,6 +3,7 @@ use druid::{
     im::Vector,
     lens::Identity,
     text::{ArcStr, BasicTextInput, EditAction, TextInput},
+    theme,
     widget::{CrossAxisAlignment, Flex, Label, List},
     AppDelegate, AppLauncher, Code, Color, Data, DelegateCtx, Env, Event, FontDescriptor,
     FontFamily, Key, Lens, LensExt, Screen, Widget, WidgetExt, WindowDesc, WindowId,
@@ -29,23 +30,13 @@ struct AppState {
 }
 
 impl AppState {
-    fn is_selected(&self, item: &String) -> bool {
-        let visible_items = self.visible_items();
-
-        if let Some(selected_item) = visible_items.get(self.selection) {
-            return selected_item == item;
-        }
-
-        false
-    }
-
     fn insert(&mut self, chars: &String) {
-        // self.selection = 0;
+        self.selection = 0;
         self.text.push_str(chars);
     }
 
     fn delete_backward(&mut self) {
-        // self.selection = 0;
+        self.selection = 0;
         self.text.pop();
     }
 
@@ -63,11 +54,24 @@ impl AppState {
         }
     }
 
+    fn complete(&mut self) {
+        let visible_items = self.visible_items();
+        let selection = self.selection;
+
+        if let Some(item) = visible_items.get(selection) {
+            self.text = item.clone();
+        }
+    }
+
     fn visible_items(&self) -> Vector<String> {
         self.items
             .clone()
             .into_iter()
             // Filter using regex to decide which items to show
+            .filter(|item| {
+                item.to_ascii_lowercase()
+                    .contains(self.text.to_ascii_lowercase().as_str())
+            })
             .collect()
     }
 }
@@ -109,7 +113,7 @@ impl AppDelegate<AppState> for Delegate {
                         }
                         ctx.submit_command(QUIT_APP);
                     }
-                    Code::Tab => {}
+                    Code::Tab => data.complete(),
                     _ => {
                         if let Some(edit) = self.input_handler.handle_event(&key_event) {
                             match edit {
@@ -135,6 +139,7 @@ fn build_ui() -> impl Widget<AppState> {
     root.add_child(
         Label::new(|text: &String, env: &Env| format!("{} {}", env.get(PROMPT), text))
             .with_font(FONT)
+            .with_text_color(FG_COLOR_NORMAL)
             .lens(AppState::text),
     );
 
@@ -142,15 +147,17 @@ fn build_ui() -> impl Widget<AppState> {
         List::new(|| {
             Flex::row()
                 .with_child(
-                    Label::new(|(_, item): &(AppState, String), _env: &_| format!("{}", item))
-                        .with_font(FONT)
-                        .with_text_color(FG_COLOR_NORMAL),
+                    Label::new(|(_, (_, item)): &(AppState, (usize, String)), _env: &_| {
+                        format!("{}", item)
+                    })
+                    .with_font(FONT)
+                    .with_text_color(FG_COLOR_NORMAL),
                 )
                 .cross_axis_alignment(CrossAxisAlignment::Center)
                 .background(BG_COLOR_NORMAL)
                 .expand_height()
-                .env_scope(|env, (data, item)| {
-                    if data.is_selected(item) {
+                .env_scope(|env, (data, (index, _))| {
+                    if data.selection == *index {
                         env.set(BG_COLOR_NORMAL, env.get(BG_COLOR_SELECTION));
                         env.set(FG_COLOR_NORMAL, env.get(FG_COLOR_SELECTION))
                     }
@@ -158,8 +165,16 @@ fn build_ui() -> impl Widget<AppState> {
         })
         .horizontal()
         .lens(Identity.map(
-            |d: &AppState| (d.clone(), d.items.clone()),
-            |d: &mut AppState, (new_d, _): (AppState, Vector<String>)| {
+            |d: &AppState| {
+                (
+                    d.clone(),
+                    d.visible_items()
+                        .into_iter()
+                        .enumerate()
+                        .collect::<Vector<(usize, String)>>(),
+                )
+            },
+            |d: &mut AppState, (new_d, _): (AppState, Vector<(usize, String)>)| {
                 *d = new_d;
             },
         )),
@@ -184,6 +199,38 @@ fn parse_vector_string(src: &str) -> Result<Vector<String>, Error> {
 #[derive(StructOpt)]
 #[structopt(name = "rmenu", version = "0.1.0")]
 struct Cli {
+    /// The font used by the selector
+    #[structopt(long)]
+    font: Option<String>,
+
+    /// The size of the font,
+    #[structopt(long)]
+    font_size: Option<f64>,
+
+    /// The character or string used as prompt
+    #[structopt(long)]
+    prompt: Option<char>,
+
+    /// The normal background color in RGB format
+    #[structopt(long)]
+    background_normal: Option<String>,
+
+    /// The normal foreground color in RGB format
+    #[structopt(long)]
+    foreground_normal: Option<String>,
+
+    /// The selection background color in RGB format
+    #[structopt(long)]
+    background_selection: Option<String>,
+
+    /// The selection foreground color in RGB format
+    #[structopt(long)]
+    foreground_selection: Option<String>,
+
+    /// The height of the bar in pixels
+    #[structopt(long)]
+    height: Option<f64>,
+
     /// The items to select between, default to stdin
     #[structopt(parse(try_from_str = parse_vector_string))]
     items: Option<Vector<String>>,
@@ -193,7 +240,7 @@ fn main() -> Result<(), ExitFailure> {
     let args: Cli = Cli::from_args();
 
     let items = match args.items {
-        Some(i) if i.len() > 0 => Ok(i),
+        Some(ref i) if i.len() > 0 => Ok(i.clone()),
         _ => io::stdin()
             .lock()
             .lines()
@@ -204,7 +251,7 @@ fn main() -> Result<(), ExitFailure> {
     let display_rect = Screen::get_display_rect();
 
     let window_position = display_rect.origin();
-    let window_size = (display_rect.width(), 30.0);
+    let window_size = (display_rect.width(), args.height.unwrap_or(30.0));
 
     let window_desc = WindowDesc::new(build_ui)
         .resizable(false)
@@ -223,17 +270,43 @@ fn main() -> Result<(), ExitFailure> {
 
     AppLauncher::with_window(window_desc)
         .delegate(delegate)
-        .configure_env(|env, _state| {
-            env.set(PROMPT, ">");
+        .configure_env(move |env, _state| {
+            let prompt = args.prompt.unwrap_or('>');
+            env.set(PROMPT, prompt.to_string());
 
-            let font_family = FontFamily::new_unchecked("JetBrains Mono");
-            env.set(FONT, FontDescriptor::new(font_family).with_size(14.0));
+            let font_family = args.font.as_ref().map_or(FontFamily::MONOSPACE, |f| {
+                FontFamily::new_unchecked(f.as_str())
+            });
+            let font_size = args.font_size.unwrap_or(11.0);
+            env.set(FONT, FontDescriptor::new(font_family).with_size(font_size));
 
-            // TODO: Get rid of unwrap here
-            env.set(BG_COLOR_SELECTION, Color::from_hex_str("#0000FF").unwrap());
-            env.set(BG_COLOR_NORMAL, Color::from_hex_str("#FF0000").unwrap());
-            env.set(FG_COLOR_SELECTION, Color::from_hex_str("#00FFFF").unwrap());
-            env.set(FG_COLOR_NORMAL, Color::from_hex_str("#FFFFFF").unwrap());
+            let bg_color_normal = args
+                .background_normal
+                .as_ref()
+                .and_then(|s| Color::from_hex_str(s).ok())
+                .unwrap_or(env.get(theme::BACKGROUND_DARK));
+            env.set(BG_COLOR_NORMAL, bg_color_normal);
+
+            let fg_color_normal = args
+                .foreground_normal
+                .as_ref()
+                .and_then(|s| Color::from_hex_str(s).ok())
+                .unwrap_or(env.get(theme::FOREGROUND_DARK));
+            env.set(FG_COLOR_NORMAL, fg_color_normal);
+
+            let bg_color_selection = args
+                .background_selection
+                .as_ref()
+                .and_then(|s| Color::from_hex_str(s).ok())
+                .unwrap_or(env.get(theme::BACKGROUND_LIGHT));
+            env.set(BG_COLOR_SELECTION, bg_color_selection);
+
+            let fg_color_selection = args
+                .foreground_selection
+                .as_ref()
+                .and_then(|s| Color::from_hex_str(s).ok())
+                .unwrap_or(env.get(theme::FOREGROUND_LIGHT));
+            env.set(FG_COLOR_SELECTION, fg_color_selection);
         })
         .launch(initial_state)
         .context("Failed to start rmenu")?;
