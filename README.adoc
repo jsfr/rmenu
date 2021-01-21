@@ -7,6 +7,7 @@ toc::[]
 
 ## To Do
 
+### rmenu
 - [ ] Get rid of `.clone` calls in `ui.rs`
 - [ ] Get rid of "counter" widget used to ensure the UI is updated when switching selection
 - [ ] Introduce fuzzy search
@@ -14,3 +15,10 @@ toc::[]
 - [ ] Introduce option to close rmenu when losing focus
 - [ ] Improve layout and give fixed width to the input field
 - [ ] Improve layout and add more padding between options + cap list at end of screen
+
+### rmenu_launch
+- [ ] Make script generic instead of specific to my machine
+
+### history
+- [ ] Combine from two binaries into one with two commands
+- [ ] Improve history sorting to account for "time since selected"
