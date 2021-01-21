@@ -18,7 +18,8 @@ toc::[]
 - [ ] Introduce option to make search case-sensitive
 - [ ] Introduce option to close rmenu when losing focus
 - [ ] Improve layout and give fixed width to the input field
-- [ ] Improve layout and add more padding between options + cap list at end of screen
+- [ ] Improve layout cap list at end of screen
+- [ ] "Shift" list when moving past the end of the screen
 
 ### rmenu_launch
 - [ ] Make script generic instead of specific to my machine

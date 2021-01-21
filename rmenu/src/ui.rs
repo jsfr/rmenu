@@ -5,7 +5,7 @@ use druid::{
     text::ArcStr,
     theme,
     widget::{CrossAxisAlignment, Flex, Label, List},
-    AppLauncher, Color, Env, FontDescriptor, Key, Lens, LensExt, Screen, Widget, WidgetExt,
+    AppLauncher, Color, Env, FontDescriptor, Insets, Key, Lens, LensExt, Screen, Widget, WidgetExt,
     WindowDesc,
 };
 use druid_shell::{Error, WindowLevel};
@@ -60,6 +60,7 @@ fn build_ui() -> impl Widget<AppData> {
                 .cross_axis_alignment(CrossAxisAlignment::Center)
                 .background(BG_COLOR_NORMAL)
                 .expand_height()
+                .padding(Insets::uniform_xy(2.5, 0.0))
                 .env_scope(|env, (data, (index, _))| {
                     if data.get_selected_index() == *index {
                         env.set(BG_COLOR_NORMAL, env.get(BG_COLOR_SELECTION));
