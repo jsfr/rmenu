@@ -3,7 +3,7 @@ use failure::Error;
 use structopt::StructOpt;
 
 fn parse_vector_string(src: &str) -> Result<Vector<String>, Error> {
-    Ok(src.lines().map(|str| str.to_owned()).collect::<Vector<_>>())
+    Ok(src.lines().map(String::from).collect::<Vector<_>>())
 }
 
 /// Shows a selector to fuzzy select between a list of items
