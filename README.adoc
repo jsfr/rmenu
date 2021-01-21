@@ -1,0 +1,16 @@
+:toc: macro
+:toc-title:
+:toclevels: 99
+# rmenu
+
+toc::[]
+
+## To Do
+
+- [ ] Get rid of `.clone` calls in `ui.rs`
+- [ ] Get rid of "counter" widget used to ensure the UI is updated when switching selection
+- [ ] Introduce fuzzy search
+- [ ] Introduce option to make search case-sensitive
+- [ ] Introduce option to close rmenu when losing focus
+- [ ] Improve layout and give fixed width to the input field
+- [ ] Improve layout and add more padding between options + cap list at end of screen
