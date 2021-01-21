@@ -7,6 +7,10 @@ toc::[]
 
 ## To Do
 
+### General
+- [ ] Add proper documentation on all functions, structs etc.
+- [ ] Add shell completions for bash, zsh and fish
+
 ### rmenu
 - [ ] Get rid of `.clone` calls in `ui.rs`
 - [ ] Get rid of "counter" widget used to ensure the UI is updated when switching selection
@@ -18,6 +22,7 @@ toc::[]
 
 ### rmenu_launch
 - [ ] Make script generic instead of specific to my machine
+- [ ] Split into more generic scripts (see dmenu and xmenu)
 
 ### history
 - [ ] Combine from two binaries into one with two commands

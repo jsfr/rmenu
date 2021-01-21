@@ -31,9 +31,18 @@ fn main() -> Result<(), ExitFailure> {
     }
     .context("failed to read items from stdin.")?;
 
-    items.sort_by_key(|item| match history_items.get(item) {
-        Some(n) => (-*n, item.to_owned()),
-        None => (0, item.to_owned()),
+    items.sort_by(|a, b| {
+        let x = match history_items.get(a) {
+            Some(n) => (*n, a),
+            None => (0, a),
+        };
+
+        let y = match history_items.get(b) {
+            Some(n) => (*n, b),
+            None => (0, b),
+        };
+
+        y.cmp(&x)
     });
 
     // Output the sorted list
