@@ -26,5 +26,5 @@ toc::[]
 - [ ] Split into more generic scripts (see dmenu and xmenu)
 
 ### history
-- [ ] Combine from two binaries into one with two commands
+- [x] Combine from two binaries into one with two commands
 - [ ] Improve history sorting to account for "time since selected"

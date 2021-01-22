@@ -28,11 +28,10 @@ PREF_SOURCES=(
 APPS=$(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sed 's:.*/\(.*\)\.app:\1:')
 PREF=$(fd . -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
 
-sort_hist=~/Repos/github.com/jsfr/rmenu/target/release/sort_hist
-update_hist=~/Repos/github.com/jsfr/rmenu/target/release/update_hist
+hist=~/Repos/github.com/jsfr/rmenu/target/release/history
 rmenu=~/Repos/github.com/jsfr/rmenu/target/release/rmenu
 
-to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $sort_hist "$history_file" | $rmenu "$@")
+to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $hist "$history_file" sort | $rmenu "$@")
 
 if [[ -z $to_run ]]; then
     exit
@@ -45,4 +44,4 @@ else
     open -b com.apple.systempreferences "$to_run_pref"
 fi
 
-$update_hist "$history_file" "$to_run"
+$hist "$history_file" update "$to_run"
