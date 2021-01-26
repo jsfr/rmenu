@@ -114,7 +114,7 @@ fn update(path: &PathBuf, entry: String) -> Result<(), ExitFailure> {
         Some(n) => *n + 1,
         None => 1,
     };
-    history_items.insert(entry.clone(), n);
+    history_items.insert(entry, n);
 
     write_history_file(path, history_items)?;
 
