@@ -5,6 +5,6 @@ authors = ["Jens Fredskov <jsfr@users.noreply.github.com>"]
 edition = "2018"
 
 [dependencies]
+clap = "3.0.0-beta.2"
 exitfailure = "0.5.1"
 failure = "0.1.8"
-structopt = "0.3.21"

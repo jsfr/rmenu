@@ -1,3 +1,4 @@
+use clap::Clap;
 use exitfailure::ExitFailure;
 use failure::ResultExt;
 use std::{
@@ -6,23 +7,25 @@ use std::{
     io::{self, prelude::*},
     path::PathBuf,
 };
-use structopt::StructOpt;
 
 // TODO generalize from RandomState to generic
 type HistoryItems = HashMap<String, i32, RandomState>;
 
 /// Sorts a list of items based on a history file.
-#[derive(StructOpt)]
-#[structopt()]
+#[derive(Clap)]
+#[clap(
+    version = "0.1.0",
+    author = "Jens Fredskov <jsfr@users.noreply.github.com>"
+)]
 struct Cli {
     /// The path of the history file to sort by
-    #[structopt(parse(from_os_str))]
+    #[clap(parse(from_os_str))]
     path: PathBuf,
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     cmd: Command,
 }
 
-#[derive(StructOpt)]
+#[derive(Clap)]
 enum Command {
     /// Sort a list of items according to the history file
     Sort {
@@ -122,7 +125,7 @@ fn update(path: &PathBuf, entry: String) -> Result<(), ExitFailure> {
 }
 
 fn main() -> Result<(), ExitFailure> {
-    let args: Cli = Cli::from_args();
+    let args: Cli = Cli::parse();
 
     match args.cmd {
         Command::Sort { mut items } => sort(&args.path, &mut items),

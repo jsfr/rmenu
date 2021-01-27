@@ -5,14 +5,14 @@ mod ui_data;
 mod ui_delegate;
 
 use crate::{cli::Cli, ui::run_selector, ui_args::Args};
+use clap::Clap;
 use druid::im::Vector;
 use exitfailure::ExitFailure;
 use failure::ResultExt;
 use std::io::{prelude::*, stdin};
-use structopt::StructOpt;
 
 fn main() -> Result<(), ExitFailure> {
-    let cli: Cli = Cli::from_args();
+    let cli: Cli = Cli::parse();
 
     let items = match cli.items {
         Some(ref i) if i.len() > 0 => Ok(i.clone()),
