@@ -1,5 +1,5 @@
 [package]
-name = "history"
+name = "rmenu_history"
 version = "0.1.0"
 authors = ["Jens Fredskov <jsfr@users.noreply.github.com>"]
 edition = "2018"

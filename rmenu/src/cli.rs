@@ -8,7 +8,7 @@ fn parse_vector_string(src: &str) -> Result<Vector<String>, Error> {
 
 /// Shows a selector to fuzzy select between a list of items
 #[derive(StructOpt)]
-#[structopt(name = "rmenu", version = "0.1.0")]
+#[structopt()]
 pub struct Cli {
     /// The font used by the selector
     #[structopt(long)]

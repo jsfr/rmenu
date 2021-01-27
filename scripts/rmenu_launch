@@ -1,47 +1,56 @@
 #!/usr/bin/env bash
 
-cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
-if [ -d "$cachedir" ]; then
-    mkdir -p "$cachedir/rmenu" &>/dev/null
-    history_file="$cachedir/rmenu/run_history"
-else
-    history_file="$HOME/.rmenu_run_history" # if no xdg dir, fall back to dotfile in ~
-fi
+function get_history_file() {
+    cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 
-if [ ! -f "$history_file" ]; then
-    touch "$history_file"
-fi
+    if [ -d "$cachedir" ]; then
+        mkdir -p "$cachedir/rmenu" &>/dev/null
+        history_file="$cachedir/rmenu/run_history"
+    else
+        history_file="$HOME/.rmenu_run_history" # if no xdg dir, fall back to dotfile in ~
+    fi
 
-APP_SOURCES=(
-    "/Applications"
-    "$HOME/Applications"
-    "/System/Applications"
-    "/System/Applications/Utilities"
-)
+    if [ ! -f "$history_file" ]; then
+        touch "$history_file"
+    fi
 
-PREF_SOURCES=(
-    "/Library/PreferencePanes"
-    "$HOME/Library/PreferencePanes"
-    "/System/Library/PreferencePanes"
-)
+    echo "$history_file"
+}
 
+function check_command() {
+    if ! command -v "$1" &> /dev/null; then
+        echo "\"$1\" could not be found, but is required."
+        exit 1
+    fi
+}
+
+# Ensure fd exists
+check_command fd
+# Ensure rmenu exists
+check_command rmenu
+# Ensure rmenu_history exists
+check_command rmenu_history
+
+APP_SOURCES=("/Applications" "$HOME/Applications" "/System/Applications" "/System/Applications/Utilities")
+PREFERENCE_SOURCES=("/Library/PreferencePanes" "$HOME/Library/PreferencePanes" "/System/Library/PreferencePanes")
 APPS=$(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sed 's:.*/\(.*\)\.app:\1:')
-PREF=$(fd . -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
+PREFERENCES=$(fd . -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
+HISTORY_FILE=$(get_history_file)
+SELECTED_APP=$(cat <(echo "$APPS") <(echo "$PREFERENCES") | rmenu_history "$HISTORY_FILE" sort | rmenu "$@")
 
-hist=~/Repos/github.com/jsfr/rmenu/target/release/history
-rmenu=~/Repos/github.com/jsfr/rmenu/target/release/rmenu
-
-to_run=$(cat <(echo "$APPS") <(echo "$PREF") | $hist "$history_file" sort | $rmenu "$@")
-
-if [[ -z $to_run ]]; then
+# If nothing was selected exit
+if [[ -z $SELECTED_APP ]]; then
     exit
 fi
 
-if grep "$to_run" <<<"$APPS" &>/dev/null; then
-    open -a "$to_run"
+if grep "$SELECTED_APP" <<<"$APPS" &>/dev/null; then
+    # If selection was an app start it
+    open -a "$SELECTED_APP"
 else
-    to_run_pref=$(fd "$to_run" -e prefPane --exact-depth 1 "${PREF_SOURCES[@]}")
-    open -b com.apple.systempreferences "$to_run_pref"
+    # if selection was a preference pane start it
+    SELECTED_PREFERENCE=$(fd "$SELECTED_APP" -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}")
+    open -b com.apple.systempreferences "$SELECTED_PREFERENCE"
 fi
 
-$hist "$history_file" update "$to_run"
+# Update history file with selection
+rmenu_history "$HISTORY_FILE" update "$SELECTED_APP"

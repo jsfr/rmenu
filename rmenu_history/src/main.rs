@@ -13,7 +13,7 @@ type HistoryItems = HashMap<String, i32, RandomState>;
 
 /// Sorts a list of items based on a history file.
 #[derive(StructOpt)]
-#[structopt(name = "history", version = "0.1.0")]
+#[structopt()]
 struct Cli {
     /// The path of the history file to sort by
     #[structopt(parse(from_os_str))]
