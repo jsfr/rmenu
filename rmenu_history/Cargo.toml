@@ -8,3 +8,7 @@ edition = "2018"
 clap = "3.0.0-beta.2"
 exitfailure = "0.5.1"
 failure = "0.1.8"
+
+[build-dependencies]
+clap = "3.0.0-beta.2"
+clap_generate = "3.0.0-beta.2"

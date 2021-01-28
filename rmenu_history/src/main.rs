@@ -1,4 +1,7 @@
+mod cli;
+
 use clap::Clap;
+use cli::{Cli, Command};
 use exitfailure::ExitFailure;
 use failure::ResultExt;
 use std::{
@@ -10,34 +13,6 @@ use std::{
 
 // TODO generalize from RandomState to generic
 type HistoryItems = HashMap<String, i32, RandomState>;
-
-/// Sorts a list of items based on a history file.
-#[derive(Clap)]
-#[clap(
-    version = "0.1.0",
-    author = "Jens Fredskov <jsfr@users.noreply.github.com>"
-)]
-struct Cli {
-    /// The path of the history file to sort by
-    #[clap(parse(from_os_str))]
-    path: PathBuf,
-    #[clap(subcommand)]
-    cmd: Command,
-}
-
-#[derive(Clap)]
-enum Command {
-    /// Sort a list of items according to the history file
-    Sort {
-        /// The items to sort, default to stdin
-        items: Vec<String>,
-    },
-    /// Update the history file with a new entry
-    Update {
-        /// The new entry to add to the history file
-        entry: String,
-    },
-}
 
 fn parse_history_file(path: &PathBuf) -> Result<HistoryItems, ExitFailure> {
     let content = std::fs::read_to_string(path)

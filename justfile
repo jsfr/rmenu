@@ -25,12 +25,8 @@ install: build manpages
 	cp target/release/rmenu /usr/local/bin/
 	cp target/release/rmenu_history /usr/local/bin/
 	cp scripts/rmenu_launch /usr/local/bin/
-	cp target/release/rmenu.1 /usr/local/share/man/man1/
-	cp target/release/rmenu_history.1 /usr/local/share/man/man1/
 
 uninstall:
 	rm /usr/local/bin/rmenu
-	rm /usr/local/bin/rmenu_launch
 	rm /usr/local/bin/rmenu_history
-	rm /usr/local/share/man/man1/rmenu.1
-	rm /usr/local/share/man/man1/rmenu_history.1
+	rm /usr/local/bin/rmenu_launch
