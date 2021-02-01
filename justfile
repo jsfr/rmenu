@@ -12,12 +12,15 @@ lint:
 upgrade:
 	cargo upgrade --workspace
 
+test:
+	cargo test
+
 build:
 	cargo build --release
 	strip target/release/rmenu
 	strip target/release/rmenu_history
 
-install: build
+install: test build
 	cp target/release/rmenu /usr/local/bin/
 	cp target/release/rmenu_history /usr/local/bin/
 	cp scripts/rmenu_launch /usr/local/bin/
