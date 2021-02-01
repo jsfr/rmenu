@@ -55,9 +55,7 @@ fn write_history_file(path: &PathBuf, history_items: &HistoryItems) -> Result<()
         .with_context(|_| format!("failed to write content to `{}`.", path.to_string_lossy()))?)
 }
 
-fn sort(path: &PathBuf, items: &mut Vec<String>) -> Result<(), ExitFailure> {
-    let history_items = parse_history_file(path)?;
-
+fn sort(history_items: &HistoryItems, items: &mut Vec<String>) -> Result<(), ExitFailure> {
     if items.is_empty() {
         *items = io::stdin()
             .lock()
@@ -68,26 +66,24 @@ fn sort(path: &PathBuf, items: &mut Vec<String>) -> Result<(), ExitFailure> {
 
     items.sort_by(|a, b| {
         let x = match history_items.get(a) {
-            Some(n) => (*n, a),
-            None => (0, a),
+            Some(n) => (-*n, a.to_ascii_lowercase()),
+            None => (0, a.to_ascii_lowercase()),
         };
 
         let y = match history_items.get(b) {
-            Some(n) => (*n, b),
-            None => (0, b),
+            Some(n) => (-*n, b.to_ascii_lowercase()),
+            None => (0, b.to_ascii_lowercase()),
         };
 
-        y.cmp(&x)
+        x.cmp(&y)
     });
-
-    // Output the sorted list
-    println!("{}", items.join("\n"));
 
     Ok(())
 }
 
 fn update(path: &PathBuf, entry: String) -> Result<(), ExitFailure> {
     let mut history_items = parse_history_file(path)?;
+
     let n = match history_items.get(&entry) {
         Some(n) => *n + 1,
         None => 1,
@@ -103,7 +99,68 @@ fn main() -> Result<(), ExitFailure> {
     let args: Cli = Cli::parse();
 
     match args.cmd {
-        Command::Sort { mut items } => sort(&args.path, &mut items),
+        Command::Sort { mut items } => {
+            let history_items = parse_history_file(&args.path)?;
+
+            sort(&history_items, &mut items)?;
+
+            // Output the sorted list
+            println!("{}", items.join("\n"));
+
+            Ok(())
+        }
         Command::Update { entry } => update(&args.path, entry),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! vec_of_strings {
+        ($($x:expr),*) => (vec![$($x.to_string()),*]);
+    }
+
+    #[test]
+    fn sort_sorts_alphabetically() -> Result<(), ExitFailure> {
+        let history_items = HistoryItems::new();
+        let mut items = vec_of_strings!["Insync", "Firefox", "Spotify"];
+        let sorted_items = vec_of_strings!["Firefox", "Insync", "Spotify"];
+
+        sort(&history_items, &mut items)?;
+
+        assert_eq!(items, sorted_items);
+
+        Ok(())
+    }
+
+    #[test]
+    fn sort_sorts_historical_items_first() -> Result<(), ExitFailure> {
+        let mut history_items = HistoryItems::new();
+
+        history_items.insert("Insync".to_string(), 1);
+        history_items.insert("Spotify".to_string(), 2);
+
+        let mut items = vec_of_strings!["Insync", "Firefox", "Spotify"];
+        let sorted_items = vec_of_strings!["Spotify", "Insync", "Firefox"];
+
+        sort(&history_items, &mut items)?;
+
+        assert_eq!(items, sorted_items);
+
+        Ok(())
+    }
+
+    #[test]
+    fn sort_sorts_case_insensitive() -> Result<(), ExitFailure> {
+        let history_items = HistoryItems::new();
+        let mut items = vec_of_strings!["insync", "Firefox", "Spotify"];
+        let sorted_items = vec_of_strings!["Firefox", "insync", "Spotify"];
+
+        sort(&history_items, &mut items)?;
+
+        assert_eq!(items, sorted_items);
+
+        Ok(())
     }
 }
