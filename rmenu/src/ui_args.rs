@@ -4,6 +4,7 @@ use druid::{im::Vector, ArcStr, Color, FontFamily};
 pub struct Args {
     pub items: Vector<String>,
     pub height: f64,
+    pub input_width: f64,
     pub font_size: f64,
     pub font_family: FontFamily,
     pub prompt: ArcStr,
@@ -18,6 +19,7 @@ impl Args {
         Self {
             items,
             height: cli.height.unwrap_or(30.0),
+            input_width: 100.0,
             font_size: cli.font_size.unwrap_or(11.0),
             font_family: cli.font.as_ref().map_or(FontFamily::MONOSPACE, |f| {
                 FontFamily::new_unchecked(f.as_str())

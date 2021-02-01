@@ -43,13 +43,14 @@ fn list_item() -> Label<ListItem> {
         .with_text_color(FG_COLOR_NORMAL)
 }
 
-fn build_ui() -> impl Widget<AppData> {
+fn build_ui(input_width: f64) -> impl Widget<AppData> {
     let mut root = Flex::row();
 
     root.add_child(
         Label::new(|text: &String, env: &Env| format!("{} {}", env.get(PROMPT), text))
             .with_font(FONT)
             .with_text_color(FG_COLOR_NORMAL)
+            .fix_width(input_width)
             .lens(AppData::text),
     );
 
@@ -88,8 +89,9 @@ pub fn run_selector(args: Args) -> Result<(), Error> {
 
     let window_position = display_rect.origin();
     let window_size = (display_rect.width(), args.height);
+    let input_width = args.input_width;
 
-    let window_desc = WindowDesc::new(build_ui)
+    let window_desc = WindowDesc::new(move || build_ui(input_width))
         .resizable(false)
         .show_titlebar(false)
         .set_position(window_position)
