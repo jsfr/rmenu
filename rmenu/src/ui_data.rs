@@ -16,7 +16,7 @@ impl AppData {
         }
     }
 
-    pub fn insert(&mut self, chars: &String) {
+    pub fn insert(&mut self, chars: &str) {
         self.selection = 0;
         self.text.push_str(chars);
     }
@@ -65,7 +65,7 @@ impl AppData {
         let items = self.visible_items();
         let index = self.selection;
 
-        items.get(index).map(|i| i.clone())
+        items.get(index).cloned()
     }
 
     pub fn get_selected_index(&self) -> usize {

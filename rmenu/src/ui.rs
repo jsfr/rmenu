@@ -38,7 +38,7 @@ fn list_lens() -> impl Lens<AppData, ListData> {
 }
 
 fn list_item() -> Label<ListItem> {
-    Label::new(|(_, (_, item)): &(AppData, (usize, String)), _env: &_| format!("{}", item))
+    Label::new(|(_, (_, item)): &(AppData, (usize, String)), _env: &_| item.to_string())
         .with_font(FONT)
         .with_text_color(FG_COLOR_NORMAL)
 }
@@ -76,7 +76,7 @@ fn build_ui(input_width: f64) -> impl Widget<AppData> {
     // TODO figure out why this is needed to trigger updates for the selection part of state and
     // get rid of it.
     root.add_child(
-        Label::new(|counter: &usize, _env: &_| format!("{}", counter))
+        Label::new(|counter: &usize, _env: &_| counter.to_string())
             .fix_width(0.0)
             .lens(AppData::selection),
     );
@@ -113,25 +113,25 @@ pub fn run_selector(args: Args) -> Result<(), Error> {
                 BG_COLOR_NORMAL,
                 args.bg_color_normal
                     .clone()
-                    .unwrap_or(env.get(theme::BACKGROUND_DARK)),
+                    .unwrap_or_else(|| env.get(theme::BACKGROUND_DARK)),
             );
             env.set(
                 FG_COLOR_NORMAL,
                 args.fg_color_normal
                     .clone()
-                    .unwrap_or(env.get(theme::FOREGROUND_DARK)),
+                    .unwrap_or_else(|| env.get(theme::FOREGROUND_DARK)),
             );
             env.set(
                 BG_COLOR_SELECTION,
                 args.bg_color_selection
                     .clone()
-                    .unwrap_or(env.get(theme::BACKGROUND_LIGHT)),
+                    .unwrap_or_else(|| env.get(theme::BACKGROUND_LIGHT)),
             );
             env.set(
                 FG_COLOR_SELECTION,
                 args.fg_color_selection
                     .clone()
-                    .unwrap_or(env.get(theme::FOREGROUND_LIGHT)),
+                    .unwrap_or_else(|| env.get(theme::FOREGROUND_LIGHT)),
             );
         })
         .launch(initial_state)?;

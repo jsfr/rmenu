@@ -15,7 +15,7 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn from(cli: Cli, items: Vector<String>) -> Self {
+    pub fn from(cli: &Cli, items: Vector<String>) -> Self {
         Self {
             items,
             height: cli.height.unwrap_or(30.0),

@@ -48,7 +48,7 @@ impl AppDelegate<AppData> for Delegate {
                         if let Some(edit) = self.input_handler.handle_event(&key_event) {
                             match edit {
                                 EditAction::Insert(chars) | EditAction::Paste(chars) => {
-                                    data.insert(&chars)
+                                    data.insert(chars.as_str())
                                 }
                                 EditAction::Backspace => data.delete_backward(),
                                 _ => {}

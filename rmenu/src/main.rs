@@ -15,7 +15,7 @@ fn main() -> Result<(), ExitFailure> {
     let cli: Cli = Cli::parse();
 
     let items = match cli.items {
-        Some(ref i) if i.len() > 0 => Ok(i.clone()),
+        Some(ref i) if !i.is_empty() => Ok(i.clone()),
         _ => stdin()
             .lock()
             .lines()
@@ -23,7 +23,7 @@ fn main() -> Result<(), ExitFailure> {
     }
     .context("failed to read items from stdin.")?;
 
-    let ui_args: Args = Args::from(cli, items);
+    let ui_args: Args = Args::from(&cli, items);
 
     run_selector(ui_args).context("Failed to start rmenu")?;
 

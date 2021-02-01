@@ -25,8 +25,8 @@ fn parse_history_file(path: &PathBuf) -> Result<HistoryItems, ExitFailure> {
 
             match split_line.as_slice() {
                 [n, a] => match n.parse::<i32>() {
-                    Ok(parsed_n) => Ok((a.to_string(), parsed_n)),
-                    _ => Err(failure::err_msg(format!(
+                    Ok(parsed_n) => Ok(((*a).to_string(), parsed_n)),
+                    Err(_) => Err(failure::err_msg(format!(
                         "could not parse `{}` as an integer.",
                         n
                     ))),
@@ -43,10 +43,10 @@ fn parse_history_file(path: &PathBuf) -> Result<HistoryItems, ExitFailure> {
     )?)
 }
 
-fn write_history_file(path: &PathBuf, history_items: HistoryItems) -> Result<(), ExitFailure> {
+fn write_history_file(path: &PathBuf, history_items: &HistoryItems) -> Result<(), ExitFailure> {
     let mut content = String::new();
 
-    for (a, n) in history_items.iter() {
+    for (a, n) in history_items {
         writeln!(&mut content, "{}:{}", n, a)
             .with_context(|_| format!("could not format values `{}`, `{}`.", n, a))?;
     }
@@ -94,7 +94,7 @@ fn update(path: &PathBuf, entry: String) -> Result<(), ExitFailure> {
     };
     history_items.insert(entry, n);
 
-    write_history_file(path, history_items)?;
+    write_history_file(path, &history_items)?;
 
     Ok(())
 }
