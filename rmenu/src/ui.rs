@@ -59,9 +59,9 @@ fn build_ui(input_width: f64) -> impl Widget<AppData> {
             Flex::row()
                 .with_child(list_item())
                 .cross_axis_alignment(CrossAxisAlignment::Center)
-                .background(BG_COLOR_NORMAL)
                 .expand_height()
-                .padding(Insets::uniform_xy(2.5, 0.0))
+                .padding(Insets::uniform_xy(5.0, 0.0))
+                .background(BG_COLOR_NORMAL)
                 .env_scope(|env, (data, (index, _))| {
                     if data.get_selected_index() == *index {
                         env.set(BG_COLOR_NORMAL, env.get(BG_COLOR_SELECTION));

@@ -17,6 +17,19 @@ function get_history_file() {
     echo "$history_file"
 }
 
+function get_blacklist() {
+    configdir=${XDG_CONFIG_HOME:-"$HOME/.config"}
+
+    if [ -d "$configdir" ]; then
+        mkdir -p "$configdir"/rmenu &>/dev/null
+        config_file="$configdir/rmenu/blacklist"
+    else
+        config_file="$HOME/.rmenu_blacklist" # if no xdg dir, fall back to dotfiles in ~
+    fi
+
+    echo "$config_file"
+}
+
 function check_command() {
     if ! command -v "$1" &> /dev/null; then
         echo "\"$1\" could not be found, but is required."
@@ -32,9 +45,12 @@ check_command rmenu
 check_command rmenu_history
 
 APP_SOURCES=("/Applications" "$HOME/Applications" "/System/Applications" "/System/Applications/Utilities")
-PREFERENCE_SOURCES=("/Library/PreferencePanes" "$HOME/Library/PreferencePanes" "/System/Library/PreferencePanes")
 APPS=$(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sed 's:.*/\(.*\)\.app:\1:')
-PREFERENCES=$(fd . -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}" | sed 's:.*/\(.*\)\.prefPane:\1:')
+
+PREFERENCE_SOURCES=("/Library/PreferencePanes" "$HOME/Library/PreferencePanes" "/System/Library/PreferencePanes")
+BLACKLIST=$(sort "$(get_blacklist)")
+PREFERENCES=$(comm -23 <(fd . -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.prefPane:\1:')
+
 HISTORY_FILE=$(get_history_file)
 SELECTED_APP=$(cat <(echo "$APPS") <(echo "$PREFERENCES") | rmenu_history "$HISTORY_FILE" sort | rmenu "$@")
 

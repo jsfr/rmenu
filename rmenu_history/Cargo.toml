@@ -3,6 +3,7 @@ name = "rmenu_history"
 version = "0.1.0"
 authors = ["Jens Fredskov <jsfr@users.noreply.github.com>"]
 edition = "2018"
+include = ["src/**/*", "build.rs", "!**/*_test.*"]
 
 [dependencies]
 clap = "3.0.0-beta.2"
