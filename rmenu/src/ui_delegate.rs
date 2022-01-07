@@ -1,19 +1,14 @@
 use crate::ui_data::AppData;
 use druid::{
     commands::QUIT_APP,
-    text::{BasicTextInput, EditAction, TextInput},
-    AppDelegate, Code, DelegateCtx, Env, Event, WindowId,
+    AppDelegate, DelegateCtx, Env, Event, WindowId, keyboard_types::Key
 };
 
-pub struct Delegate {
-    input_handler: BasicTextInput,
-}
+pub struct Delegate {}
 
 impl Delegate {
     pub fn new() -> Self {
-        Self {
-            input_handler: BasicTextInput::default(),
-        }
+        Self {}
     }
 }
 
@@ -28,33 +23,25 @@ impl AppDelegate<AppData> for Delegate {
     ) -> Option<Event> {
         match event {
             Event::KeyDown(key_event) => {
-                match key_event.code {
-                    Code::Escape => ctx.submit_command(QUIT_APP),
-                    Code::ArrowLeft => {
+                match key_event.key {
+                    Key::Escape => ctx.submit_command(QUIT_APP),
+                    Key::ArrowLeft => {
                         data.previous();
                     }
-                    Code::ArrowRight => {
+                    Key::ArrowRight => {
                         data.next();
                     }
-                    Code::Enter => {
+                    Key::Enter => {
                         if let Some(item) = data.get_selected_item() {
                             // TODO: don't print here but instead store/return the item
                             println!("{}", item);
                         }
                         ctx.submit_command(QUIT_APP);
                     }
-                    Code::Tab => data.complete(),
-                    _ => {
-                        if let Some(edit) = self.input_handler.handle_event(&key_event) {
-                            match edit {
-                                EditAction::Insert(chars) | EditAction::Paste(chars) => {
-                                    data.insert(chars.as_str())
-                                }
-                                EditAction::Backspace => data.delete_backward(),
-                                _ => {}
-                            }
-                        }
-                    }
+                    Key::Tab => data.complete(),
+                    Key::Backspace => data.delete_backward(),
+                    Key::Character(c) => data.insert(&c),
+                    _ => {}
                 }
                 None
             }

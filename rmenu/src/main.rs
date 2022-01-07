@@ -5,7 +5,7 @@ mod ui_data;
 mod ui_delegate;
 
 use crate::{cli::Cli, ui::run_selector, ui_args::Args};
-use clap::Clap;
+use clap::Parser;
 use druid::im::Vector;
 use exitfailure::ExitFailure;
 use failure::ResultExt;

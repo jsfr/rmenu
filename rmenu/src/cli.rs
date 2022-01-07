@@ -1,4 +1,4 @@
-use clap::Clap;
+use clap::Parser;
 use druid::im::Vector;
 use failure::Error;
 
@@ -7,7 +7,7 @@ fn parse_vector_string(src: &str) -> Result<Vector<String>, Error> {
 }
 
 /// Shows a selector to fuzzy select between a list of items
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(
     version = "0.1.0",
     author = "Jens Fredskov <jsfr@users.noreply.github.com>"

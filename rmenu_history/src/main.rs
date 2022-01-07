@@ -1,6 +1,6 @@
 mod cli;
 
-use clap::Clap;
+use clap::Parser;
 use cli::{Cli, Command};
 use exitfailure::ExitFailure;
 use failure::ResultExt;

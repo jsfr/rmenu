@@ -91,12 +91,12 @@ pub fn run_selector(args: Args) -> Result<(), Error> {
     let window_size = (display_rect.width(), args.height);
     let input_width = args.input_width;
 
-    let window_desc = WindowDesc::new(move || build_ui(input_width))
+    let window_desc = WindowDesc::new(build_ui(input_width))
         .resizable(false)
         .show_titlebar(false)
         .set_position(window_position)
         .window_size(window_size)
-        .set_level(WindowLevel::Modal);
+        .set_level(WindowLevel::AppWindow);
 
     let initial_state = AppData::new(args.items.clone());
     let delegate = Delegate::new();

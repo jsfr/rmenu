@@ -1,8 +1,8 @@
-use clap::Clap;
+use clap::Parser;
 use std::path::PathBuf;
 
 /// Sorts a list of items based on a history file.
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(
     version = "0.1.0",
     author = "Jens Fredskov <jsfr@users.noreply.github.com>"
@@ -15,7 +15,7 @@ pub struct Cli {
     pub cmd: Command,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub enum Command {
     /// Sort a list of items according to the history file
     Sort {
