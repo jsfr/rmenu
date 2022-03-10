@@ -21,11 +21,11 @@ build:
 	strip target/release/rmenu_history
 
 install: test build
-	cp target/release/rmenu /usr/local/bin/
-	cp target/release/rmenu_history /usr/local/bin/
-	cp scripts/rmenu_launch /usr/local/bin/
+	cp target/release/rmenu /opt/homebrew/bin
+	cp target/release/rmenu_history /opt/homebrew/bin
+	cp scripts/rmenu_launch /opt/homebrew/bin
 
 uninstall:
-	rm /usr/local/bin/rmenu
-	rm /usr/local/bin/rmenu_history
-	rm /usr/local/bin/rmenu_launch
+	rm /opt/homebrew/bin/rmenu
+	rm /opt/homebrew/bin/rmenu_history
+	rm /opt/homebrew/bin/rmenu_launch
