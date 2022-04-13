@@ -60,7 +60,7 @@ if [[ -z $SELECTED_APP ]]; then
     exit
 fi
 
-if grep "$SELECTED_APP" <<<"$APPS" &>/dev/null; then
+if grep "^$SELECTED_APP\$" <<<"$APPS" &>/dev/null; then
     # If selection was an app start it
     open -a "$SELECTED_APP"
 else
