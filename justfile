@@ -1,7 +1,7 @@
-# Local Variables:
-# mode: makefile
-# End:
-# vim: set ft=make :
+install_path := "/opt/homebrew/bin"
+build_path := "./target/release"
+script_path := "./scripts"
+binaries := `cat Cargo.toml | grep "members" | sed 's/.*\[\(.*\)\]/\1/' | tr -d ",\""`
 
 default:
 	@just build
@@ -17,15 +17,12 @@ test:
 
 build:
 	cargo build --release
-	strip target/release/rmenu
-	strip target/release/rmenu_history
+	for binary in {{binaries}}; do strip {{build_path}}/$binary; done
 
 install: test build
-	cp target/release/rmenu /opt/homebrew/bin
-	cp target/release/rmenu_history /opt/homebrew/bin
-	cp scripts/rmenu_launch /opt/homebrew/bin
+	for binary in {{binaries}}; do cp {{build_path}}/$binary {{install_path}}; done
+	for script in `ls {{script_path}}`; do cp {{script_path}}/$script {{install_path}}; done
 
 uninstall:
-	rm /opt/homebrew/bin/rmenu
-	rm /opt/homebrew/bin/rmenu_history
-	rm /opt/homebrew/bin/rmenu_launch
+	for binary in {{binaries}}; do rm {{install_path}}/$binary; done
+	for script in `ls {{script_path}}`; do rm {{install_path}}/$script; done
