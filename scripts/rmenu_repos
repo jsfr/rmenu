@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+function get_cache_file() {
+    cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+
+    if [ -d "$cachedir" ]; then
+        mkdir -p "$cachedir/rmenu" &>/dev/null
+        cache_file="$cachedir/rmenu/repo_cache"
+    else
+        cache_file="$HOME/.rmenu_repo_cache" # if no xdg dir, fall back to dotfile in ~
+    fi
+
+    if [ ! -f "$cache_file" ]; then
+        touch "$cache_file"
+    fi
+
+    echo "$cache_file"
+}
+
+function get_history_file() {
+    cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+
+    if [ -d "$cachedir" ]; then
+        mkdir -p "$cachedir/rmenu" &>/dev/null
+        history_file="$cachedir/rmenu/repo_history"
+    else
+        history_file="$HOME/.rmenu_repo_history" # if no xdg dir, fall back to dotfile in ~
+    fi
+
+    if [ ! -f "$history_file" ]; then
+        touch "$history_file"
+    fi
+
+    echo "$history_file"
+}
+
+function check_command() {
+    if ! command -v "$1" &> /dev/null; then
+        echo "\"$1\" could not be found, but is required."
+        exit 1
+    fi
+}
+
+# Ensure rmenu exists
+check_command rmenu
+# Ensure rmenu_history exists
+check_command rmenu_history
+
+CACHE_FILE=$(get_cache_file)
+CACHE=$(cat $CACHE_FILE)
+
+if [[ -z $CACHE ]]; then
+    REPOS=$(gh repo list "$GITHUB_ORG" --no-archived --json name --jq '.[].name' -L 1000)
+else
+    REPOS=$CACHE
+fi
+
+
+HISTORY_FILE=$(get_history_file)
+
+SELECTED_REPO=$(cat <(echo "$REPOS") | rmenu_history "$HISTORY_FILE" sort | rmenu "$@")
+
+# If nothing was selected exit
+if [[ -z $SELECTED_REPO ]]; then
+    exit
+fi
+
+gh repo view "$GITHUB_ORG/$SELECTED_REPO" --web
+
+# Update history file with selection
+rmenu_history "$HISTORY_FILE" update "$SELECTED_REPO"
+
+# Update cache file
+if [[ -z $CACHE ]]; then
+    CACHE=$REPOS
+else
+    CACHE=$(gh repo list "$GITHUB_ORG" --no-archived --json name --jq '.[].name' -L ${NUMBER_OF_REPOS:-1000})
+fi
+echo $CACHE | tr " " "\n" > $CACHE_FILE
