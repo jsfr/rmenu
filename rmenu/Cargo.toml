@@ -5,14 +5,14 @@ authors = ["Jens Fredskov <jsfr@users.noreply.github.com>"]
 edition = "2021"
 
 [dependencies]
-clap = { version = "3.1.9", features = ["derive"] }
+clap = { version = "3.1.18", features = ["derive"] }
 druid = { git = "https://github.com/linebender/druid.git", features = ["im"] }
 druid-shell = { git = "https://github.com/linebender/druid.git" }
 exitfailure = "0.5.1"
 failure = "0.1.8"
 
 [build-dependencies]
-clap = { version = "3.1.9", features = ["derive"] }
-clap_complete = "3.1.1"
+clap = { version = "3.1.18", features = ["derive"] }
+clap_complete = "3.1.4"
 druid = { git = "https://github.com/linebender/druid.git", features = ["im"] }
 failure = "0.1.8"
