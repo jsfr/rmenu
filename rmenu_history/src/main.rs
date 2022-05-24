@@ -61,7 +61,7 @@ fn sort(history_items: &HistoryItems, items: &mut Vec<String>) -> Result<(), Exi
             .lock()
             .lines()
             .collect::<Result<Vec<String>, _>>()
-            .context("failed to read items from stdin.")?
+            .context("failed to read items from stdin.")?;
     }
 
     items.sort_by(|a, b| {

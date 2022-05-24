@@ -65,20 +65,12 @@ fn build_ui(input_width: f64) -> impl Widget<AppData> {
                 .env_scope(|env, (data, (index, _))| {
                     if data.get_selected_index() == *index {
                         env.set(BG_COLOR_NORMAL, env.get(BG_COLOR_SELECTION));
-                        env.set(FG_COLOR_NORMAL, env.get(FG_COLOR_SELECTION))
+                        env.set(FG_COLOR_NORMAL, env.get(FG_COLOR_SELECTION));
                     }
                 })
         })
         .horizontal()
         .lens(list_lens()),
-    );
-
-    // TODO figure out why this is needed to trigger updates for the selection part of state and
-    // get rid of it.
-    root.add_child(
-        Label::new(|counter: &usize, _env: &_| counter.to_string())
-            .fix_width(0.0)
-            .lens(AppData::selection),
     );
 
     root.background(BG_COLOR_NORMAL)
