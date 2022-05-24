@@ -5,13 +5,12 @@ mod ui_data;
 mod ui_delegate;
 
 use crate::{cli::Cli, ui::run_selector, ui_args::Args};
+use anyhow::{Context, Result};
 use clap::Parser;
 use druid::im::Vector;
-use exitfailure::ExitFailure;
-use failure::ResultExt;
 use std::io::{prelude::*, stdin};
 
-fn main() -> Result<(), ExitFailure> {
+fn main() -> Result<()> {
     let cli: Cli = Cli::parse();
 
     let items = match cli.items {

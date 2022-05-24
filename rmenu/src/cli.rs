@@ -1,6 +1,6 @@
+use anyhow::Error;
 use clap::Parser;
 use druid::im::Vector;
-use failure::Error;
 
 fn parse_vector_string(src: &str) -> Result<Vector<String>, Error> {
     Ok(src.lines().map(String::from).collect::<Vector<_>>())

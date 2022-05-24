@@ -1,7 +1,6 @@
 use crate::ui_data::AppData;
 use druid::{
-    commands::QUIT_APP,
-    AppDelegate, DelegateCtx, Env, Event, WindowId, keyboard_types::Key
+    commands::QUIT_APP, keyboard_types::Key, AppDelegate, DelegateCtx, Env, Event, WindowId,
 };
 
 pub struct Delegate {}

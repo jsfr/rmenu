@@ -7,3 +7,4 @@ members = ["rmenu_history", "rmenu"]
 lto = true
 panic = 'abort'
 codegen-units = 1
+strip = true

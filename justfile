@@ -17,7 +17,6 @@ test:
 
 build:
 	cargo build --release
-	for binary in {{binaries}}; do strip {{build_path}}/$binary; done
 
 install: test build
 	for binary in {{binaries}}; do cp {{build_path}}/$binary {{install_path}}; done

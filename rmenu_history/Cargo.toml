@@ -6,10 +6,5 @@ edition = "2021"
 include = ["src/**/*", "build.rs", "!**/*_test.*"]
 
 [dependencies]
+anyhow = "1.0.57"
 clap = { version = "3.1.18", features = ["derive"] }
-exitfailure = "0.5.1"
-failure = "0.1.8"
-
-[build-dependencies]
-clap = { version = "3.1.18", features = ["derive"] }
-clap_complete = "3.1.4"
