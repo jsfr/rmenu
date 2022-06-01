@@ -47,10 +47,10 @@ check_command rmenu_history
 BLACKLIST=$(sort "$(get_blacklist)")
 
 APP_SOURCES=("/Applications" "$HOME/Applications" "/System/Applications" "/System/Applications/Utilities" "/System/Library/CoreServices")
-APPS=$(comm -23 <(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.app:\1:')
+APPS=$(comm -23 <(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.app/:\1:')
 
 PREFERENCE_SOURCES=("/Library/PreferencePanes" "$HOME/Library/PreferencePanes" "/System/Library/PreferencePanes")
-PREFERENCES=$(comm -23 <(fd . -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.prefPane:\1:')
+PREFERENCES=$(comm -23 <(fd . -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.prefPane/:\1:')
 
 HISTORY_FILE=$(get_history_file)
 SELECTED_APP=$(cat <(echo "$APPS") <(echo "$PREFERENCES") | rmenu_history "$HISTORY_FILE" sort | rmenu "$@")
