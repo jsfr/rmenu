@@ -6,5 +6,5 @@ edition = "2021"
 include = ["src/**/*", "build.rs", "!**/*_test.*"]
 
 [dependencies]
-anyhow = "1.0.57"
-clap = { version = "3.1.18", features = ["derive"] }
+anyhow = "1.0.58"
+clap = { version = "3.2.8", features = ["derive"] }
