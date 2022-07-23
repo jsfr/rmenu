@@ -33,7 +33,7 @@ impl AppDelegate<AppData> for Delegate {
                     Key::Enter => {
                         if let Some(item) = data.get_selected_item() {
                             // TODO: don't print here but instead store/return the item
-                            println!("{}", item);
+                            println!("{}", item.1);
                         }
                         ctx.submit_command(QUIT_APP);
                     }

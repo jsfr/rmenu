@@ -27,6 +27,7 @@ fn list_lens() -> impl Lens<AppData, ListData> {
                 d.clone(),
                 d.visible_items()
                     .into_iter()
+                    .map(|i| i.0)
                     .enumerate()
                     .collect::<Vector<(usize, String)>>(),
             )

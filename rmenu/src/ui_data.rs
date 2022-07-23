@@ -3,12 +3,12 @@ use druid::{im::Vector, Data, Lens};
 #[derive(Clone, Data, Lens)]
 pub struct AppData {
     text: String,
-    items: Vector<String>,
+    items: Vector<(String, String)>,
     selection: usize,
 }
 
 impl AppData {
-    pub fn new(items: Vector<String>) -> Self {
+    pub fn new(items: Vector<(String, String)>) -> Self {
         Self {
             text: String::from(""),
             items,
@@ -45,23 +45,23 @@ impl AppData {
         let selection = self.selection;
 
         if let Some(item) = visible_items.get(selection) {
-            self.text = item.clone();
+            self.text = item.0.clone();
         }
     }
 
-    pub fn visible_items(&self) -> Vector<String> {
+    pub fn visible_items(&self) -> Vector<(String, String)> {
         self.items
             .clone()
             .into_iter()
             // Filter using regex to decide which items to show
-            .filter(|item| {
+            .filter(|(item, _)| {
                 item.to_ascii_lowercase()
                     .contains(self.text.to_ascii_lowercase().as_str())
             })
             .collect()
     }
 
-    pub fn get_selected_item(&self) -> Option<String> {
+    pub fn get_selected_item(&self) -> Option<(String, String)> {
         let items = self.visible_items();
         let index = self.selection;
 

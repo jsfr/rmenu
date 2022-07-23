@@ -2,7 +2,7 @@ use crate::cli::Cli;
 use druid::{im::Vector, ArcStr, Color, FontFamily};
 
 pub struct Args {
-    pub items: Vector<String>,
+    pub items: Vector<(String, String)>,
     pub height: f64,
     pub input_width: f64,
     pub font_size: f64,
@@ -15,7 +15,7 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn from(cli: &Cli, items: Vector<String>) -> Self {
+    pub fn from(cli: &Cli, items: Vector<(String, String)>) -> Self {
         Self {
             items,
             height: cli.height.unwrap_or(30.0),

@@ -45,6 +45,10 @@ pub struct Cli {
     #[clap(long)]
     pub height: Option<f64>,
 
+    /// A jaq filter to apply to items for showing. When set the value inputs are treated as JSON objects
+    #[clap(long)]
+    pub filter: Option<String>,
+
     /// The items to select between, default to stdin
     #[clap(parse(try_from_str = parse_vector_string))]
     pub items: Option<Vector<String>>,
