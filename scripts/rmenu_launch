@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 function get_history_file() {
-    cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+    cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 
-    if [ -d "$cachedir" ]; then
-        mkdir -p "$cachedir/rmenu" &>/dev/null
-        history_file="$cachedir/rmenu/run_history"
+    if [ -d "$cache_dir" ]; then
+        mkdir -p "$cache_dir/rmenu" &>/dev/null
+        history_file="$cache_dir/rmenu/launch_history"
     else
-        history_file="$HOME/.rmenu_run_history" # if no xdg dir, fall back to dotfile in ~
+        history_file="$HOME/.rmenu_launch_history" # if no xdg dir, fall back to dotfile in ~
     fi
 
     if [ ! -f "$history_file" ]; then
@@ -18,56 +18,54 @@ function get_history_file() {
 }
 
 function get_blacklist() {
-    configdir=${XDG_CONFIG_HOME:-"$HOME/.config"}
+    config_dir=${XDG_CONFIG_HOME:-"$HOME/.config"}
 
-    if [ -d "$configdir" ]; then
-        mkdir -p "$configdir"/rmenu &>/dev/null
-        config_file="$configdir/rmenu/blacklist"
+    if [ -d "$config_dir" ]; then
+        mkdir -p "$config_dir"/rmenu &>/dev/null
+        config_file="$config_dir/rmenu/launch_blacklist"
     else
-        config_file="$HOME/.rmenu_blacklist" # if no xdg dir, fall back to dotfiles in ~
+        config_file="$HOME/.rmenu_launch_blacklist" # if no xdg dir, fall back to dotfiles in ~
     fi
 
     echo "$config_file"
 }
 
-function check_command() {
-    if ! command -v "$1" &> /dev/null; then
-        echo "\"$1\" could not be found, but is required."
-        exit 1
-    fi
+function check_commands() {
+    for command in "$@"; do
+        if ! command -v "$command" &> /dev/null; then
+            echo "'$command' could not be found, but is required."
+            exit 1
+        fi
+    done
 }
 
-# Ensure fd exists
-check_command fd
-# Ensure rmenu exists
-check_command rmenu
-# Ensure rmenu_history exists
-check_command rmenu_history
+check_commands fd jq rmenu rmenu_history
 
 BLACKLIST=$(sort "$(get_blacklist)")
-
-APP_SOURCES=("/Applications" "$HOME/Applications" "/System/Applications" "/System/Applications/Utilities" "/System/Library/CoreServices")
-APPS=$(comm -23 <(fd . -e app --exact-depth 1 "${APP_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.app/:\1:')
-
-PREFERENCE_SOURCES=("/Library/PreferencePanes" "$HOME/Library/PreferencePanes" "/System/Library/PreferencePanes")
-PREFERENCES=$(comm -23 <(fd . -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}" | sort) <(echo "$BLACKLIST") | sed 's:.*/\(.*\)\.prefPane/:\1:')
+SOURCES=(
+    "/Applications"
+    "$HOME/Applications"
+    "/System/Applications"
+    "/System/Applications/Utilities"
+    "/System/Library/CoreServices"
+    "/Library/PreferencePanes"
+    "$HOME/Library/PreferencePanes"
+    "/System/Library/PreferencePanes"
+)
+OPTIONS=$(comm -23 <(fd . -e app -e prefPane --exact-depth 1 "${SOURCES[@]}" | sort) <(echo "$BLACKLIST") \
+    | jq -Rrnc '[inputs] | .[] | {name: . | split("/")[-2] | sub(".prefPane$|.app$";""), path: .}')
 
 HISTORY_FILE=$(get_history_file)
-SELECTED_APP=$(cat <(echo "$APPS") <(echo "$PREFERENCES") | rmenu_history "$HISTORY_FILE" sort | rmenu "$@")
+
+SELECTION=$(echo "$OPTIONS" | rmenu_history "$HISTORY_FILE" sort | rmenu --filter ".name" "$@")
 
 # If nothing was selected exit
-if [[ -z $SELECTED_APP ]]; then
+if [[ -z $SELECTION ]]; then
     exit
 fi
 
-if grep "^$SELECTED_APP\$" <<<"$APPS" &>/dev/null; then
-    # If selection was an app start it
-    open -a "$SELECTED_APP"
-else
-    # if selection was a preference pane start it
-    SELECTED_PREFERENCE=$(fd "$SELECTED_APP" -e prefPane --exact-depth 1 "${PREFERENCE_SOURCES[@]}")
-    open -b com.apple.systempreferences "$SELECTED_PREFERENCE"
-fi
+# Open selection
+open "$(echo $SELECTION | jq -r '.path')"
 
 # Update history file with selection
-rmenu_history "$HISTORY_FILE" update "$SELECTED_APP"
+rmenu_history "$HISTORY_FILE" update "$SELECTION"

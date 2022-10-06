@@ -2,7 +2,7 @@ mod cli;
 
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
-use cli::{Cli, Command};
+use cli::{Cli, Commands};
 use std::{
     collections::{hash_map::RandomState, HashMap},
     fmt::Write,
@@ -10,7 +10,6 @@ use std::{
     path::PathBuf,
 };
 
-// TODO generalize from RandomState to generic
 type HistoryItems = HashMap<String, i32, RandomState>;
 
 fn parse_history_file(path: &PathBuf) -> Result<HistoryItems> {
@@ -91,7 +90,7 @@ fn main() -> Result<()> {
     let args: Cli = Cli::parse();
 
     match args.cmd {
-        Command::Sort { mut items } => {
+        Commands::Sort { mut items } => {
             let history_items = parse_history_file(&args.path)?;
 
             sort(&history_items, &mut items)?;
@@ -101,7 +100,7 @@ fn main() -> Result<()> {
 
             Ok(())
         }
-        Command::Update { entry } => update(&args.path, entry),
+        Commands::Update { entry } => update(&args.path, entry),
     }
 }
 

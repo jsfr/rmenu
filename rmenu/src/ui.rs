@@ -3,7 +3,6 @@ use druid::{
     im::Vector,
     lens::Identity,
     text::ArcStr,
-    theme,
     widget::{CrossAxisAlignment, Flex, Label, List},
     AppLauncher, Color, Env, FontDescriptor, Insets, Key, Lens, LensExt, Screen, Widget, WidgetExt,
     WindowDesc,
@@ -102,30 +101,10 @@ pub fn run_selector(args: Args) -> Result<(), Error> {
                 FONT,
                 FontDescriptor::new(args.font_family.clone()).with_size(args.font_size),
             );
-            env.set(
-                BG_COLOR_NORMAL,
-                args.bg_color_normal
-                    .clone()
-                    .unwrap_or_else(|| env.get(theme::BACKGROUND_DARK)),
-            );
-            env.set(
-                FG_COLOR_NORMAL,
-                args.fg_color_normal
-                    .clone()
-                    .unwrap_or_else(|| env.get(theme::FOREGROUND_DARK)),
-            );
-            env.set(
-                BG_COLOR_SELECTION,
-                args.bg_color_selection
-                    .clone()
-                    .unwrap_or_else(|| env.get(theme::BACKGROUND_LIGHT)),
-            );
-            env.set(
-                FG_COLOR_SELECTION,
-                args.fg_color_selection
-                    .clone()
-                    .unwrap_or_else(|| env.get(theme::FOREGROUND_LIGHT)),
-            );
+            env.set(BG_COLOR_NORMAL, args.background_normal.clone());
+            env.set(FG_COLOR_NORMAL, args.foreground_normal.clone());
+            env.set(BG_COLOR_SELECTION, args.background_selection.clone());
+            env.set(FG_COLOR_SELECTION, args.foreground_selection.clone());
         })
         .launch(initial_state)?;
 

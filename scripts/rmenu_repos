@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 function get_cache_file() {
-    cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+    cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 
-    if [ -d "$cachedir" ]; then
-        mkdir -p "$cachedir/rmenu" &>/dev/null
-        cache_file="$cachedir/rmenu/repo_cache"
+    if [ -d "$cache_dir" ]; then
+        mkdir -p "$cache_dir/rmenu" &>/dev/null
+        cache_file="$cache_dir/rmenu/repos_cache"
     else
-        cache_file="$HOME/.rmenu_repo_cache" # if no xdg dir, fall back to dotfile in ~
+        cache_file="$HOME/.rmenu_repos_cache" # if no xdg dir, fall back to dotfile in ~
     fi
 
     if [ ! -f "$cache_file" ]; then
@@ -18,13 +18,13 @@ function get_cache_file() {
 }
 
 function get_history_file() {
-    cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+    cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 
-    if [ -d "$cachedir" ]; then
-        mkdir -p "$cachedir/rmenu" &>/dev/null
-        history_file="$cachedir/rmenu/repo_history"
+    if [ -d "$cache_dir" ]; then
+        mkdir -p "$cache_dir/rmenu" &>/dev/null
+        history_file="$cache_dir/rmenu/repos_history"
     else
-        history_file="$HOME/.rmenu_repo_history" # if no xdg dir, fall back to dotfile in ~
+        history_file="$HOME/.rmenu_repos_history" # if no xdg dir, fall back to dotfile in ~
     fi
 
     if [ ! -f "$history_file" ]; then
@@ -34,17 +34,16 @@ function get_history_file() {
     echo "$history_file"
 }
 
-function check_command() {
-    if ! command -v "$1" &> /dev/null; then
-        echo "\"$1\" could not be found, but is required."
-        exit 1
-    fi
+function check_commands() {
+    for command in "$@"; do
+        if ! command -v "$command" &> /dev/null; then
+            echo "'$command' could not be found, but is required."
+            exit 1
+        fi
+    done
 }
 
-# Ensure rmenu exists
-check_command rmenu
-# Ensure rmenu_history exists
-check_command rmenu_history
+check_commands rmenu rmenu_history
 
 CACHE_FILE=$(get_cache_file)
 CACHE=$(cat $CACHE_FILE)
