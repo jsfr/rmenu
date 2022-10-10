@@ -7,12 +7,13 @@ mod ui_delegate;
 use crate::{cli::Cli, ui::run_selector, ui_args::Args};
 use anyhow::{bail, Context, Result};
 use clap::Parser;
-use druid::im::Vector;
+use druid::{im::Vector, ArcStr};
 use jaq_core::{parse, Ctx, Definitions, RcIter, Val};
 use serde_json::Value;
 use std::io::{prelude::*, stdin};
+use ui_args::Item;
 
-fn jaq_filter(item: String, filter: &str) -> Result<(String, String)> {
+fn jaq_filter(item: String, filter: &str) -> Result<Item> {
     let input: Value = serde_json::from_str(&item).context("failed to parse item as json.")?;
     // start out only from core filters,
     // which do not include filters in the standard library
@@ -29,7 +30,10 @@ fn jaq_filter(item: String, filter: &str) -> Result<(String, String)> {
     // iterator over the output values
     let mut out = f.run(Ctx::new([], &inputs), Val::from(input));
     match out.next() {
-        Some(Ok(val)) => Ok((val.to_string().trim_matches('"').to_string(), item)),
+        Some(Ok(val)) => Ok(Item {
+            key: val.to_string().trim_matches('"').into(),
+            value: item.into(),
+        }),
         _ => bail!("found no value when applying filter."),
     }
 }
@@ -37,7 +41,7 @@ fn jaq_filter(item: String, filter: &str) -> Result<(String, String)> {
 fn main() -> Result<()> {
     let cli: Cli = Cli::parse();
 
-    let items = match cli.items {
+    let items: Result<Vector<Item>> = match cli.items {
         Some(ref i) if !i.is_empty() => i.clone(),
         _ => stdin()
             .lock()
@@ -47,14 +51,24 @@ fn main() -> Result<()> {
     }
     .into_iter()
     .map(|item| match &cli.filter {
-        None => Ok((item.clone(), item)),
+        None => {
+            let value: ArcStr = item.into();
+            Ok(Item {
+                key: value.clone(),
+                value,
+            })
+        }
         Some(filter) => jaq_filter(item, filter),
     })
-    .collect::<Result<Vector<(String, String)>>>()?;
+    .collect();
 
-    let ui_args: Args = Args::from(&cli, items);
+    let ui_args: Args = Args::from(&cli, items?);
 
-    run_selector(ui_args).context("failed to start rmenu")?;
+    let result = run_selector(ui_args).context("failed to start rmenu")?;
+
+    if let Some(value) = result {
+        println!("{}", value)
+    }
 
     Ok(())
 }

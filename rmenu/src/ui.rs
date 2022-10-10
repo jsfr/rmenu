@@ -1,4 +1,7 @@
+use std::sync::{Arc, Mutex};
+
 use crate::{ui_args::Args, ui_data::AppData, ui_delegate::Delegate};
+use anyhow::{bail, Error};
 use druid::{
     im::Vector,
     lens::Identity,
@@ -7,7 +10,7 @@ use druid::{
     AppLauncher, Color, Env, FontDescriptor, Insets, Key, Lens, LensExt, Screen, Widget, WidgetExt,
     WindowDesc,
 };
-use druid_shell::{Error, WindowLevel};
+use druid_shell::WindowLevel;
 
 const PROMPT: Key<ArcStr> = Key::new("rmenu.prompt");
 const FONT: Key<FontDescriptor> = Key::new("rmenu.font_family");
@@ -16,8 +19,9 @@ const BG_COLOR_NORMAL: Key<Color> = Key::new("rmenu.bg_color_normal");
 const FG_COLOR_SELECTION: Key<Color> = Key::new("rmenu.fg_color_selection");
 const FG_COLOR_NORMAL: Key<Color> = Key::new("rmenu.fg_color_normal");
 
-type ListData = (AppData, Vector<(usize, String)>);
-type ListItem = (AppData, (usize, String));
+type ListData = (AppData, Vector<ListItem>);
+type ListItemData = (AppData, ListItem);
+type ListItem = (usize, ArcStr);
 
 fn list_lens() -> impl Lens<AppData, ListData> {
     Identity.map(
@@ -25,20 +29,20 @@ fn list_lens() -> impl Lens<AppData, ListData> {
             (
                 d.clone(),
                 d.visible_items()
-                    .into_iter()
-                    .map(|i| i.0)
+                    .iter()
+                    .map(|i| i.key.clone())
                     .enumerate()
-                    .collect::<Vector<(usize, String)>>(),
+                    .collect::<Vector<ListItem>>(),
             )
         },
-        |d: &mut AppData, (new_d, _): (AppData, Vector<(usize, String)>)| {
+        |d: &mut AppData, (new_d, _): ListData| {
             *d = new_d;
         },
     )
 }
 
-fn list_item() -> Label<ListItem> {
-    Label::new(|(_, (_, item)): &(AppData, (usize, String)), _env: &_| item.to_string())
+fn list_item() -> Label<ListItemData> {
+    Label::new(|(_, (_, item)): &ListItemData, _env: &_| item.clone())
         .with_font(FONT)
         .with_text_color(FG_COLOR_NORMAL)
 }
@@ -76,7 +80,7 @@ fn build_ui(input_width: f64) -> impl Widget<AppData> {
     root.background(BG_COLOR_NORMAL)
 }
 
-pub fn run_selector(args: Args) -> Result<(), Error> {
+pub fn run_selector(args: Args) -> Result<Option<String>, Error> {
     let display_rect = Screen::get_display_rect();
 
     let window_position = display_rect.origin();
@@ -90,8 +94,9 @@ pub fn run_selector(args: Args) -> Result<(), Error> {
         .window_size(window_size)
         .set_level(WindowLevel::AppWindow);
 
-    let initial_state = AppData::new(args.items.clone());
-    let delegate = Delegate::new();
+    let state = AppData::new(args.items.clone());
+    let result = Arc::new(Mutex::new(None));
+    let delegate = Delegate::new(Arc::clone(&result));
 
     AppLauncher::with_window(window_desc)
         .delegate(delegate)
@@ -106,7 +111,13 @@ pub fn run_selector(args: Args) -> Result<(), Error> {
             env.set(BG_COLOR_SELECTION, args.background_selection.clone());
             env.set(FG_COLOR_SELECTION, args.foreground_selection.clone());
         })
-        .launch(initial_state)?;
+        .launch(state)?;
 
-    Ok(())
+    let output = if let Ok(lock) = (*result).lock() {
+        lock.clone()
+    } else {
+        bail!("failed to get result");
+    };
+
+    Ok(output)
 }

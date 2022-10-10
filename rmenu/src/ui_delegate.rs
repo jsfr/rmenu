@@ -1,13 +1,17 @@
+use std::sync::{Arc, Mutex};
+
 use crate::ui_data::AppData;
 use druid::{
     commands::QUIT_APP, keyboard_types::Key, AppDelegate, DelegateCtx, Env, Event, WindowId,
 };
 
-pub struct Delegate {}
+pub struct Delegate {
+    pub result: Arc<Mutex<Option<String>>>,
+}
 
 impl Delegate {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(result: Arc<Mutex<Option<String>>>) -> Self {
+        Self { result }
     }
 }
 
@@ -31,10 +35,8 @@ impl AppDelegate<AppData> for Delegate {
                         data.next();
                     }
                     Key::Enter => {
-                        if let Some(item) = data.get_selected_item() {
-                            // TODO: don't print here but instead store/return the item
-                            println!("{}", item.1);
-                        }
+                        *self.result.lock().unwrap() =
+                            data.get_selected_item().map(|i| i.value.to_string());
                         ctx.submit_command(QUIT_APP);
                     }
                     Key::Tab => data.complete(),

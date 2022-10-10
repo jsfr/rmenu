@@ -1,8 +1,14 @@
 use crate::cli::Cli;
-use druid::{im::Vector, ArcStr, Color, FontFamily};
+use druid::{im::Vector, ArcStr, Color, Data, FontFamily};
+
+#[derive(Clone, Data)]
+pub struct Item {
+    pub key: ArcStr,
+    pub value: ArcStr,
+}
 
 pub struct Args {
-    pub items: Vector<(String, String)>,
+    pub items: Vector<Item>,
     pub height: f64,
     pub input_width: f64,
     pub font_size: f64,
@@ -15,7 +21,7 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn from(cli: &Cli, items: Vector<(String, String)>) -> Self {
+    pub fn from(cli: &Cli, items: Vector<Item>) -> Self {
         Self {
             items,
             height: cli.height,

@@ -2,16 +2,18 @@ use anyhow::{Context, Error};
 use clap::Parser;
 use druid::{im::Vector, ArcStr, Color, FontFamily};
 
+#[allow(clippy::unnecessary_wraps)]
 fn parse_items(src: &str) -> Result<Vector<String>, Error> {
-    Ok(src.split(" ").map(String::from).collect::<Vector<_>>())
+    Ok(src.split(' ').map(String::from).collect::<Vector<_>>())
 }
 
 fn parse_color(src: &str) -> Result<Color, Error> {
     Color::from_hex_str(src).context("format of color string should be '[#]RGB' or '[#]RRGGBB'")
 }
 
+#[allow(clippy::unnecessary_wraps)]
 fn parse_font(src: &str) -> Result<FontFamily, Error> {
-    Ok(if src == "" {
+    Ok(if src.is_empty() {
         FontFamily::MONOSPACE
     } else {
         FontFamily::new_unchecked(src)

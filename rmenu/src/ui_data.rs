@@ -1,14 +1,16 @@
 use druid::{im::Vector, Data, Lens};
 
+use crate::ui_args::Item;
+
 #[derive(Clone, Data, Lens)]
 pub struct AppData {
     text: String,
-    items: Vector<(String, String)>,
+    items: Vector<Item>,
     selection: usize,
 }
 
 impl AppData {
-    pub fn new(items: Vector<(String, String)>) -> Self {
+    pub fn new(items: Vector<Item>) -> Self {
         Self {
             text: String::from(""),
             items,
@@ -45,23 +47,23 @@ impl AppData {
         let selection = self.selection;
 
         if let Some(item) = visible_items.get(selection) {
-            self.text = item.0.clone();
+            self.text = item.key.to_string();
         }
     }
 
-    pub fn visible_items(&self) -> Vector<(String, String)> {
+    pub fn visible_items(&self) -> Vector<Item> {
         self.items
             .clone()
             .into_iter()
             // Filter using regex to decide which items to show
-            .filter(|(item, _)| {
-                item.to_ascii_lowercase()
+            .filter(|Item{key, ..}| {
+                key.to_ascii_lowercase()
                     .contains(self.text.to_ascii_lowercase().as_str())
             })
             .collect()
     }
 
-    pub fn get_selected_item(&self) -> Option<(String, String)> {
+    pub fn get_selected_item(&self) -> Option<Item> {
         let items = self.visible_items();
         let index = self.selection;
 
