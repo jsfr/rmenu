@@ -1,6 +1,6 @@
 use druid::{im::Vector, Data, Lens};
 
-use crate::ui_args::Item;
+use crate::Item;
 
 #[derive(Clone, Data, Lens)]
 pub struct AppData {
@@ -53,13 +53,13 @@ impl AppData {
 
     pub fn visible_items(&self) -> Vector<Item> {
         self.items
-            .clone()
-            .into_iter()
+            .iter()
             // Filter using regex to decide which items to show
             .filter(|Item{key, ..}| {
                 key.to_ascii_lowercase()
                     .contains(self.text.to_ascii_lowercase().as_str())
             })
+            .cloned()
             .collect()
     }
 

@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{ui_args::Args, ui_data::AppData, ui_delegate::Delegate};
+use crate::{cli::Cli, ui_data::AppData, ui_delegate::Delegate, Item};
 use anyhow::{bail, Error};
 use druid::{
     im::Vector,
@@ -80,7 +80,7 @@ fn build_ui(input_width: f64) -> impl Widget<AppData> {
     root.background(BG_COLOR_NORMAL)
 }
 
-pub fn run_selector(args: Args) -> Result<Option<String>, Error> {
+pub fn run_selector(args: Cli, items: Vector<Item>) -> Result<Option<String>, Error> {
     let display_rect = Screen::get_display_rect();
 
     let window_position = display_rect.origin();
@@ -94,7 +94,7 @@ pub fn run_selector(args: Args) -> Result<Option<String>, Error> {
         .window_size(window_size)
         .set_level(WindowLevel::AppWindow);
 
-    let state = AppData::new(args.items.clone());
+    let state = AppData::new(items);
     let result = Arc::new(Mutex::new(None));
     let delegate = Delegate::new(Arc::clone(&result));
 

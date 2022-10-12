@@ -1,11 +1,6 @@
 use anyhow::{Context, Error};
 use clap::Parser;
-use druid::{im::Vector, ArcStr, Color, FontFamily};
-
-#[allow(clippy::unnecessary_wraps)]
-fn parse_items(src: &str) -> Result<Vector<String>, Error> {
-    Ok(src.split(' ').map(String::from).collect::<Vector<_>>())
-}
+use druid::{ArcStr, Color, FontFamily};
 
 fn parse_color(src: &str) -> Result<Color, Error> {
     Color::from_hex_str(src).context("format of color string should be '[#]RGB' or '[#]RRGGBB'")
@@ -62,8 +57,4 @@ pub struct Cli {
 
     #[arg(skip = 100.0)]
     pub input_width: f64,
-
-    /// The items to select between, defaults to stdin
-    #[arg(value_parser = parse_items)]
-    pub items: Option<Vector<String>>,
 }
