@@ -1,6 +1,12 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{cli::Cli, ui_data::AppData, ui_delegate::Delegate, Item};
+use crate::{
+    cli::Cli,
+    item_filter::{ContainsFilter, ItemFilter, ItemFilters, SubstringFilter},
+    ui_data::AppData,
+    ui_delegate::Delegate,
+    Item,
+};
 use anyhow::{bail, Error};
 use druid::{
     im::Vector,
@@ -94,7 +100,12 @@ pub fn run_selector(args: Cli, items: Vector<Item>) -> Result<Option<String>, Er
         .window_size(window_size)
         .set_level(WindowLevel::AppWindow);
 
-    let state = AppData::new(items);
+    let filter: Arc<dyn ItemFilter> = match &args.item_filter {
+        ItemFilters::Contains => Arc::new(ContainsFilter {}),
+        ItemFilters::Substring => Arc::new(SubstringFilter {}),
+    };
+
+    let state = AppData::new(items, filter);
     let result = Arc::new(Mutex::new(None));
     let delegate = Delegate::new(Arc::clone(&result));
 

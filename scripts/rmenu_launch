@@ -57,7 +57,7 @@ OPTIONS=$(comm -23 <(fd . -e app -e prefPane --exact-depth 1 "${SOURCES[@]}" | s
 
 HISTORY_FILE=$(get_history_file)
 
-SELECTION=$(echo "$OPTIONS" | rmenu_history "$HISTORY_FILE" sort | rmenu --filter ".name" "$@")
+SELECTION=$(echo "$OPTIONS" | rmenu_history "$HISTORY_FILE" sort | rmenu --json-filter ".name" "$@")
 
 # If nothing was selected exit
 if [[ -z $SELECTION ]]; then

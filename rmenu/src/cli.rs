@@ -2,6 +2,8 @@ use anyhow::{Context, Error};
 use clap::Parser;
 use druid::{ArcStr, Color, FontFamily};
 
+use crate::item_filter::ItemFilters;
+
 fn parse_color(src: &str) -> Result<Color, Error> {
     Color::from_hex_str(src).context("format of color string should be '[#]RGB' or '[#]RRGGBB'")
 }
@@ -50,10 +52,14 @@ pub struct Cli {
     #[arg(long, default_value_t = 30.0)]
     pub height: f64,
 
+    /// The filter used to filter items against the search string
+    #[arg(long, value_enum, default_value_t = ItemFilters::Substring)]
+    pub item_filter: ItemFilters,
+
     /// A jaq filter to apply to items for showing.
     /// When set the items are treated as JSON objects
     #[arg(long)]
-    pub filter: Option<String>,
+    pub json_filter: Option<String>,
 
     #[arg(skip = 100.0)]
     pub input_width: f64,

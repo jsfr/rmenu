@@ -1,20 +1,24 @@
+use std::sync::Arc;
+
 use druid::{im::Vector, Data, Lens};
 
-use crate::Item;
+use crate::{item_filter::ItemFilter, Item};
 
 #[derive(Clone, Data, Lens)]
 pub struct AppData {
     text: String,
     items: Vector<Item>,
     selection: usize,
+    item_filter: Arc<dyn ItemFilter>,
 }
 
 impl AppData {
-    pub fn new(items: Vector<Item>) -> Self {
+    pub fn new(items: Vector<Item>, item_filter: Arc<dyn ItemFilter>) -> Self {
         Self {
             text: String::from(""),
             items,
             selection: 0,
+            item_filter,
         }
     }
 
@@ -56,8 +60,7 @@ impl AppData {
             .iter()
             // Filter using regex to decide which items to show
             .filter(|Item{key, ..}| {
-                key.to_ascii_lowercase()
-                    .contains(self.text.to_ascii_lowercase().as_str())
+                self.item_filter.filter(&self.text, key)
             })
             .cloned()
             .collect()

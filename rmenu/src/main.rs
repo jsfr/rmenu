@@ -1,5 +1,6 @@
 mod cli;
 mod filter;
+mod item_filter;
 mod ui;
 mod ui_data;
 mod ui_delegate;
@@ -19,7 +20,7 @@ pub struct Item {
 
 fn main() -> Result<()> {
     let cli: Cli = Cli::parse();
-    let filter = Filter::new(&cli.filter);
+    let filter = Filter::new(&cli.json_filter);
 
     let items: Vector<Item> = stdin()
         .lock()

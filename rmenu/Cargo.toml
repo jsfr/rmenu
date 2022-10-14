@@ -3,7 +3,10 @@ name = "rmenu"
 version = "0.3.0"
 authors = ["Jens Fredskov <jsfr@users.noreply.github.com>"]
 edition = "2021"
-description = "Shows a selector to fuzzy select between a list of items"
+description = """\
+Shows a selector to search and select between a list of items.
+Items are read from stdin. The selected result is printed to stdout.\
+"""
 
 [dependencies]
 anyhow = "1.0.65"
