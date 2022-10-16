@@ -8,4 +8,4 @@ description = "Sorts a list of items based on a history file"
 
 [dependencies]
 anyhow = "1.0.65"
-clap = { version = "4.0.8", features = ["derive"] }
+clap = { version = "4.0.15", features = ["derive"] }

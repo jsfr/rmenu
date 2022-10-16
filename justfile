@@ -10,7 +10,7 @@ lint:
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic
 
 upgrade:
-	cargo upgrade --workspace
+	cargo upgrade
 
 test:
 	cargo test
