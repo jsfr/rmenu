@@ -37,7 +37,14 @@ fn parse_history_file(path: &PathBuf) -> Result<HistoryItems> {
 fn write_history_file(path: &PathBuf, history_items: &HistoryItems) -> Result<()> {
     let mut content = String::new();
 
-    for (a, n) in history_items {
+    let mut sorted_items = history_items
+        .iter()
+        .map(|(a, n)| (*n, a))
+        .collect::<Vec<(i32, &String)>>();
+
+    sorted_items.sort_by_key(|(n, _)| *n);
+
+    for (n, a) in sorted_items {
         writeln!(&mut content, "{}:{}", n, a)
             .with_context(|| format!("could not format values `{}`, `{}`.", n, a))?;
     }
