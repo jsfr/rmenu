@@ -5,9 +5,9 @@ function get_cache_file() {
 
     if [ -d "$cache_dir" ]; then
         mkdir -p "$cache_dir/rmenu" &>/dev/null
-        cache_file="$cache_dir/rmenu/repos_cache"
+        cache_file="$cache_dir/rmenu/repos_cache_${GITHUB_ORG}"
     else
-        cache_file="$HOME/.rmenu_repos_cache" # if no xdg dir, fall back to dotfile in ~
+        cache_file="$HOME/.rmenu_repos_cache_${GITHUB_ORG}" # if no xdg dir, fall back to dotfile in ~
     fi
 
     if [ ! -f "$cache_file" ]; then
@@ -22,9 +22,9 @@ function get_history_file() {
 
     if [ -d "$cache_dir" ]; then
         mkdir -p "$cache_dir/rmenu" &>/dev/null
-        history_file="$cache_dir/rmenu/repos_history"
+        history_file="$cache_dir/rmenu/repos_history_${GITHUB_ORG}"
     else
-        history_file="$HOME/.rmenu_repos_history" # if no xdg dir, fall back to dotfile in ~
+        history_file="$HOME/.rmenu_repos_history_${GITHUB_ORG}" # if no xdg dir, fall back to dotfile in ~
     fi
 
     if [ ! -f "$history_file" ]; then
@@ -44,6 +44,16 @@ function check_commands() {
 }
 
 check_commands rmenu rmenu_history
+
+# If multiple potential orgs are selected give option between them
+if [[ $GITHUB_ORGS ]]; then
+    GITHUB_ORG=$(echo -e $GITHUB_ORGS | rmenu "$@")
+fi
+
+# If nothing was selected exit
+if [[ -z $GITHUB_ORG ]]; then
+    exit
+fi
 
 CACHE_FILE=$(get_cache_file)
 CACHE=$(cat $CACHE_FILE)
