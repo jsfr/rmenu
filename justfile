@@ -10,6 +10,7 @@ lint:
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic
 
 upgrade:
+	cargo update
 	cargo upgrade
 
 test:

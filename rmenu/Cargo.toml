@@ -10,8 +10,8 @@ Items are read from stdin. The selected result is printed to stdout.\
 
 [dependencies]
 anyhow = "1.0.66"
-clap = { version = "4.0.19", features = ["derive"] }
+clap = { version = "4.0.29", features = ["derive"] }
 druid = { git = "https://github.com/linebender/druid.git", features = ["im"] }
 druid-shell = { git = "https://github.com/linebender/druid.git" }
 jaq-core = "0.8.2"
-serde_json = "1.0.87"
+serde_json = "1.0.89"

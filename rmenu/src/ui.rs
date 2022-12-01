@@ -87,10 +87,13 @@ fn build_ui(input_width: f64) -> impl Widget<AppData> {
 }
 
 pub fn run_selector(args: Cli, items: Vector<Item>) -> Result<Option<String>, Error> {
-    let display_rect = Screen::get_display_rect();
+    let monitor = match Screen::get_monitors().into_iter().find(|m| m.is_primary()) {
+        Some(m) => m,
+        None => bail!("failed to find default monitor"),
+    };
 
-    let window_position = display_rect.origin();
-    let window_size = (display_rect.width(), args.height);
+    let window_position = monitor.virtual_work_rect().origin();
+    let window_size = (monitor.virtual_work_rect().width(), args.height);
     let input_width = args.input_width;
 
     let window_desc = WindowDesc::new(build_ui(input_width))
