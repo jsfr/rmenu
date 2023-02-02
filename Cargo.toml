@@ -1,5 +1,5 @@
 [workspace]
-members = ["rmenu_history", "rmenu"]
+members = ["rmenu_history", "rmenu", "rmenu_egui"]
 
 [profile.release]
 # Consider if this is better or worse. We want fast boot time not smaller
