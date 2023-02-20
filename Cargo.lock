@@ -1975,7 +1975,6 @@ dependencies = [
  "anyhow",
  "clap",
  "cocoa",
- "dirs",
  "eframe",
  "egui",
  "font-kit",

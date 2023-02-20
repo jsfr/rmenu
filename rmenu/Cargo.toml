@@ -12,7 +12,6 @@ Items are read from stdin. The selected result is printed to stdout.\
 anyhow = "1.0.69"
 clap = { version = "4.1.6", features = ["derive"] }
 cocoa = "0.24.1"
-dirs = "4.0.0"
 eframe = "0.21.3"
 egui = "0.21.0"
 font-kit = "0.11.0"
