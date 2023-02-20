@@ -63,7 +63,7 @@ fn main() -> Result<()> {
 
     let app_font = AppFont {
         size: cli.font_size,
-        family: FontFamily::default(), // TODO: get the font from CLI
+        definitions: cli.font_definitions,
     };
 
     // TODO: is this really the best way to handle returning the result

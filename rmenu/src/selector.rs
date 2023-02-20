@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use crate::item_filter::ItemFilter;
 use crate::item_label::ItemLabelExt;
 use egui::{
-    CentralPanel, Color32, Context, Event, FontFamily, FontId, Frame, Key, Margin, Modifiers,
+    CentralPanel, Color32, Context, Event, FontDefinitions, FontId, Frame, Key, Margin, Modifiers,
     RichText, Style, Ui, Vec2, Visuals,
 };
 
@@ -18,7 +18,7 @@ pub struct AppColors {
 
 pub struct AppFont {
     pub size: f32,
-    pub family: FontFamily,
+    pub definitions: FontDefinitions,
 }
 
 pub struct Selector {
@@ -63,11 +63,12 @@ impl Selector {
         };
 
         let style = Style {
-            override_font_id: Some(FontId::new(font.size, font.family)),
+            override_font_id: Some(FontId::new(font.size, egui::FontFamily::Monospace)),
             visuals,
             ..Default::default()
         };
 
+        cc.egui_ctx.set_fonts(font.definitions);
         cc.egui_ctx.set_style(style);
 
         Self {

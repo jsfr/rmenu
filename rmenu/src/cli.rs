@@ -1,6 +1,10 @@
-use anyhow::{bail, Error};
+use std::fs;
+
+use anyhow::{bail, Context, Error};
 use clap::Parser;
-use egui::{Color32, FontFamily};
+use egui::{Color32, FontData, FontDefinitions};
+
+use font_kit::{handle::Handle, source::SystemSource};
 
 use crate::item_filter::ItemFilters;
 
@@ -50,23 +54,55 @@ fn parse_color(src: &str) -> Result<Color32, Error> {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn parse_font(src: &str) -> Result<FontFamily, Error> {
-    // TODO: Write this function
-    // dirs::font_dir()
-    // Ok(if src.is_empty() {
-    //     FontFamily::default()
-    // } else {
-    //     FontFamily::new_unchecked(src)
-    // })
-    Ok(FontFamily::default())
+fn parse_font(src: &str) -> Result<FontDefinitions, Error> {
+    let mut definitions = FontDefinitions::default();
+
+    if !src.is_empty() {
+        let font_handle = SystemSource::new()
+            .select_by_postscript_name(src)
+            .with_context(|| format!("failed to find a font named {src}"))?;
+
+        let font_data = match font_handle {
+            Handle::Path {
+                path,
+                font_index: 0,
+            } => {
+                let bytes = fs::read(path).context("failed to read font data from path")?;
+                FontData::from_owned(bytes)
+            }
+            Handle::Memory {
+                bytes,
+                font_index: 0,
+            } => FontData::from_owned(bytes.to_vec()),
+            _ => bail!("failed to find a single font"),
+        };
+
+        definitions
+            .font_data
+            .insert("custom_font".to_string(), font_data);
+
+        definitions
+            .families
+            .entry(egui::FontFamily::Proportional)
+            .or_default()
+            .insert(0, "custom_font".to_owned());
+
+        definitions
+            .families
+            .entry(egui::FontFamily::Monospace)
+            .or_default()
+            .insert(0, "custom_font".to_owned());
+    }
+
+    Ok(definitions)
 }
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
     /// The font used by the selector
-    #[arg(long = "font", value_parser = parse_font, default_value = "")]
-    pub font_family: FontFamily,
+    #[arg(long = "font", id = "FONT", value_parser = parse_font, default_value = "")]
+    pub font_definitions: FontDefinitions,
 
     /// The size of the font,
     #[arg(long, default_value_t = 13.0)]
