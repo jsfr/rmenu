@@ -1,20 +1,9 @@
-use std::sync::Arc;
-
 use clap::ValueEnum;
 
 #[derive(ValueEnum, Clone)]
 pub enum ItemFilters {
     Contains,
     Substring,
-}
-
-impl Into<Arc<dyn ItemFilter>> for ItemFilters {
-    fn into(self) -> Arc<dyn ItemFilter> {
-        match self {
-            ItemFilters::Contains => Arc::new(ContainsFilter {}),
-            ItemFilters::Substring => Arc::new(SubstringFilter {}),
-        }
-    }
 }
 
 pub trait ItemFilter {

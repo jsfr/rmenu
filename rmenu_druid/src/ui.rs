@@ -16,7 +16,6 @@ use druid::{
     AppLauncher, Color, Env, FontDescriptor, Insets, Key, Lens, LensExt, Screen, Widget, WidgetExt,
     WindowDesc,
 };
-use druid_shell::WindowLevel;
 
 const PROMPT: Key<ArcStr> = Key::new("rmenu.prompt");
 const FONT: Key<FontDescriptor> = Key::new("rmenu.font_family");
@@ -100,8 +99,7 @@ pub fn run_selector(args: Cli, items: Vector<Item>) -> Result<Option<String>, Er
         .resizable(false)
         .show_titlebar(false)
         .set_position(window_position)
-        .window_size(window_size)
-        .set_level(WindowLevel::AppWindow);
+        .window_size(window_size);
 
     let filter: Arc<dyn ItemFilter> = match &args.item_filter {
         ItemFilters::Contains => Arc::new(ContainsFilter {}),

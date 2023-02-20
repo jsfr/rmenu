@@ -2,7 +2,7 @@ use anyhow::{bail, Context, Result};
 use jaq_core::{parse, Ctx, Definitions, RcIter, Val};
 use serde_json::Value;
 
-use crate::item::Item;
+use crate::Item;
 
 pub struct Filter {
     filter: Option<String>,
@@ -15,7 +15,7 @@ impl Filter {
         }
     }
 
-    pub fn to_item(&self, item: String) -> Result<Item> {
+    pub fn filter(&self, item: String) -> Result<Item> {
         match &self.filter {
             Some(filter) => {
                 let input: Value =
@@ -38,15 +38,15 @@ impl Filter {
 
                 match out.next() {
                     Some(Ok(val)) => Ok(Item {
-                        key: val.to_string().trim_matches('"').to_string(),
-                        value: item.clone(),
+                        key: val.to_string().trim_matches('"').into(),
+                        value: item.into(),
                     }),
                     _ => bail!("found no value when applying filter."),
                 }
             }
             None => Ok(Item {
-                key: item.clone(),
-                value: item,
+                key: item.as_str().into(),
+                value: item.into(),
             }),
         }
     }

@@ -1,37 +1,100 @@
+use std::{
+    io::BufRead,
+    sync::{Arc, Mutex},
+};
+
+use anyhow::{anyhow, bail, Result};
+use clap::Parser;
+use cli::Cli;
+use cocoa::appkit::NSScreen;
+use cocoa::base::nil;
+
+use egui::{FontFamily, Pos2, Vec2};
+use filter::Filter;
+use item::Item;
+use selector::{AppColors, AppFont, Selector};
+
 mod cli;
 mod filter;
+mod item;
 mod item_filter;
-mod ui;
-mod ui_data;
-mod ui_delegate;
+mod item_label;
+mod selector;
 
-use crate::{cli::Cli, ui::run_selector};
-use anyhow::{Context, Result};
-use clap::Parser;
-use druid::{im::Vector, ArcStr};
-use filter::Filter;
-use std::io::{prelude::*, stdin};
+fn get_main_screen_width() -> f32 {
+    let frame = unsafe {
+        let object = NSScreen::mainScreen(nil);
+        object.frame()
+    };
 
-#[derive(Clone, druid::Data)]
-pub struct Item {
-    pub key: ArcStr,
-    pub value: ArcStr,
+    let size = frame.size;
+
+    size.width as f32
 }
 
 fn main() -> Result<()> {
     let cli: Cli = Cli::parse();
     let filter = Filter::new(&cli.json_filter);
 
-    let items: Vector<Item> = stdin()
+    // TODO: should this be a im::Vector
+    let items: Vec<Item> = std::io::stdin()
         .lock()
         .lines()
-        .map(|result| result.map(|item| filter.filter(item))?)
+        .map(|result| result.map(|item| filter.to_item(item))?)
         .collect::<Result<_>>()?;
 
-    let result = run_selector(cli, items).context("failed to start rmenu")?;
+    let width = get_main_screen_width();
 
-    if let Some(value) = result {
-        println!("{}", value);
+    let native_options = eframe::NativeOptions {
+        decorated: false,
+        initial_window_size: Some(Vec2::new(width, cli.height)),
+        resizable: false,
+        always_on_top: true,
+        initial_window_pos: Some(Pos2::new(0.0, 0.0)),
+        ..Default::default()
+    };
+
+    let app_colors = AppColors {
+        foreground_normal: cli.foreground_normal,
+        foreground_selection: cli.foreground_selection,
+        background_normal: cli.background_normal,
+        background_selection: cli.background_selection,
+    };
+
+    let app_font = AppFont {
+        size: cli.font_size,
+        family: FontFamily::default(), // TODO: get the font from CLI
+    };
+
+    // TODO: is this really the best way to handle returning the result
+    let result = Arc::new(Mutex::new(None));
+    let result_clone = Arc::clone(&result);
+
+    eframe::run_native(
+        "rmenu",
+        native_options,
+        Box::new(|cc| {
+            Box::new(Selector::new(
+                cc,
+                items,
+                cli.item_filter.into(),
+                cli.prompt,
+                app_colors,
+                app_font,
+                result_clone,
+            ))
+        }),
+    )
+    .map_err(|err| anyhow!("{err}"))?;
+
+    let output = if let Ok(lock) = (*result).lock() {
+        lock.clone()
+    } else {
+        bail!("failed to get result");
+    };
+
+    if let Some(item) = output {
+        println!("{item}");
     }
 
     Ok(())
