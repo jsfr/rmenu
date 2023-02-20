@@ -133,16 +133,14 @@ impl Selector {
                             self.selection = self
                                 .selection
                                 .checked_sub(1)
-                                .map(|i| clamp(0, i, max))
-                                .unwrap_or(0);
+                                .map_or(0, |i| clamp(0, i, max));
                         }
                         Key::ArrowRight => {
                             let max = visible_items.len() - 1;
                             self.selection = self
                                 .selection
                                 .checked_add(1)
-                                .map(|i| clamp(0, i, max))
-                                .unwrap_or(max);
+                                .map_or(max, |i| clamp(0, i, max));
                         }
                         _ => {}
                     },

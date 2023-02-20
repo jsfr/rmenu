@@ -45,8 +45,8 @@ fn write_history_file(path: &PathBuf, history_items: &HistoryItems) -> Result<()
     sorted_items.sort_by_key(|(n, _)| *n);
 
     for (n, a) in sorted_items {
-        writeln!(&mut content, "{}:{}", n, a)
-            .with_context(|| format!("could not format values `{}`, `{}`.", n, a))?;
+        writeln!(&mut content, "{n}:{a}")
+            .with_context(|| format!("could not format values `{n}`, `{a}`."))?;
     }
 
     std::fs::write(path, content)

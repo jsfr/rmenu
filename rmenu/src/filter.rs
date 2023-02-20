@@ -39,7 +39,7 @@ impl Filter {
                 match out.next() {
                     Some(Ok(val)) => Ok(Item {
                         key: val.to_string().trim_matches('"').to_string(),
-                        value: item.clone(),
+                        value: item,
                     }),
                     _ => bail!("found no value when applying filter."),
                 }

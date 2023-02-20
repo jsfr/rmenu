@@ -9,7 +9,7 @@ use cli::Cli;
 use cocoa::appkit::NSScreen;
 use cocoa::base::nil;
 
-use egui::{FontFamily, Pos2, Vec2};
+use egui::{Pos2, Vec2};
 use filter::Filter;
 use item::Item;
 use selector::{AppColors, AppFont, Selector};

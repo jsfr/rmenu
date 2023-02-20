@@ -8,9 +8,9 @@ pub enum ItemFilters {
     Substring,
 }
 
-impl Into<Arc<dyn ItemFilter>> for ItemFilters {
-    fn into(self) -> Arc<dyn ItemFilter> {
-        match self {
+impl From<ItemFilters> for Arc<dyn ItemFilter> {
+    fn from(value: ItemFilters) -> Self {
+        match value {
             ItemFilters::Contains => Arc::new(ContainsFilter {}),
             ItemFilters::Substring => Arc::new(SubstringFilter {}),
         }
@@ -32,10 +32,9 @@ impl ItemFilter for ContainsFilter {
 pub struct SubstringFilter {}
 impl ItemFilter for SubstringFilter {
     fn filter(&self, filter: &str, item: &str) -> bool {
-        let mut filter_chars = filter.chars();
         let mut item_chars = item.chars();
 
-        'outer: while let Some(a) = filter_chars.next() {
+        'outer: for a in filter.chars() {
             loop {
                 match item_chars.next() {
                     Some(b) => {
