@@ -10,7 +10,7 @@ Items are read from stdin. The selected result is printed to stdout.\
 
 [dependencies]
 anyhow = "1.0.69"
-clap = { version = "4.1.6", features = ["derive"] }
+clap = { version = "4.1.7", features = ["derive"] }
 cocoa = "0.24.1"
 eframe = "0.21.3"
 egui = "0.21.0"
