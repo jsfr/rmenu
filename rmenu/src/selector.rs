@@ -107,6 +107,9 @@ impl Selector {
         ui.input(|input| {
             for event in &input.events {
                 match event {
+                    Event::WindowFocused(false) => {
+                        frame.focus()
+                    }
                     Event::Text(text) => {
                         self.selection = 0;
                         self.text += text;
@@ -158,7 +161,7 @@ impl eframe::App for Selector {
             ..Default::default()
         };
         CentralPanel::default().frame(panel_frame).show(ctx, |ui| {
-            let mut spacing = ui.spacing_mut();
+            let spacing = ui.spacing_mut();
             spacing.item_spacing = Vec2::ZERO;
             spacing.window_margin = Margin::same(0.0);
 
