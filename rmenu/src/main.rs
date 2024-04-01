@@ -1,9 +1,9 @@
 use std::{
     io::BufRead,
-    sync::{Arc, Mutex},
+    sync::mpsc::{self, Receiver, Sender},
 };
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use cli::Cli;
 use cocoa::appkit::NSScreen;
@@ -66,9 +66,7 @@ fn main() -> Result<()> {
         definitions: cli.font_definitions,
     };
 
-    // TODO: is this really the best way to handle returning the result
-    let result = Arc::new(Mutex::new(None));
-    let result_clone = Arc::clone(&result);
+    let (tx, rx): (Sender<Option<String>>, Receiver<Option<String>>) = mpsc::channel();
 
     eframe::run_native(
         "rmenu",
@@ -81,19 +79,13 @@ fn main() -> Result<()> {
                 cli.prompt,
                 app_colors,
                 app_font,
-                result_clone,
+                tx,
             ))
         }),
     )
     .map_err(|err| anyhow!("{err}"))?;
 
-    let output = if let Ok(lock) = (*result).lock() {
-        lock.clone()
-    } else {
-        bail!("failed to get result");
-    };
-
-    if let Some(item) = output {
+    if let Some(item) = rx.try_recv().context("failed to get result")? {
         println!("{item}");
     }
 

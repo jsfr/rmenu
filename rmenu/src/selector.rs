@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc::Sender, Arc};
 
 use crate::item_filter::ItemFilter;
 use crate::item_label::ItemLabelExt;
@@ -28,7 +28,7 @@ pub struct Selector {
     prompt: String,
     item_filter: Arc<dyn ItemFilter>,
     colors: AppColors,
-    result: Arc<Mutex<Option<String>>>,
+    sender: Sender<Option<String>>,
 }
 
 fn clamp(low: usize, value: usize, high: usize) -> usize {
@@ -49,7 +49,7 @@ impl Selector {
         prompt: String,
         colors: AppColors,
         font: AppFont,
-        result: Arc<Mutex<Option<String>>>,
+        sender: Sender<Option<String>>,
     ) -> Self {
         // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
         // Restore app state using cc.storage (requires the "persistence" feature).
@@ -78,7 +78,7 @@ impl Selector {
             selection: 0,
             item_filter,
             colors,
-            result,
+            sender,
         }
     }
 
@@ -124,11 +124,8 @@ impl Selector {
                             self.selection = 0;
                             self.text.pop();
                         }
-                        Key::Escape => {
-                            frame.close();
-                        }
-                        Key::Enter => {
-                            *self.result.lock().unwrap() = self.selected_item_value();
+                        Key::Escape|Key::Enter => {
+                            let _ = self.sender.send(self.selected_item_value());
                             frame.close();
                         }
                         Key::ArrowLeft => {
