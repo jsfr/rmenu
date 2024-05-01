@@ -124,7 +124,11 @@ impl Selector {
                             self.selection = 0;
                             self.text.pop();
                         }
-                        Key::Escape|Key::Enter => {
+                        Key::Escape => {
+                            let _ = self.sender.send(None);
+                            frame.close();
+                        },
+                        Key::Enter => {
                             let _ = self.sender.send(self.selected_item_value());
                             frame.close();
                         }
