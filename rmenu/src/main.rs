@@ -34,7 +34,7 @@ fn get_main_screen_width() -> f32 {
 
 fn main() -> Result<()> {
     let cli: Cli = Cli::parse();
-    let filter = Filter::new(&cli.json_filter);
+    let filter = Filter::new(&cli.jql_filter);
 
     // TODO: should this be a im::Vector
     let items: Vec<Item> = std::io::stdin()

@@ -136,10 +136,10 @@ pub struct Cli {
     #[arg(long, value_enum, default_value_t = ItemFilters::Substring)]
     pub item_filter: ItemFilters,
 
-    /// A jaq filter to apply to items for showing.
+    /// A jql filter to apply to items for showing.
     /// When set the items are treated as JSON objects
     #[arg(long)]
-    pub json_filter: Option<String>,
+    pub jql_filter: Option<String>,
 
     #[arg(skip = 100.0)]
     pub input_min_width: f32,

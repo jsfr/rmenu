@@ -1,5 +1,5 @@
-use anyhow::{bail, Context, Result};
-use jaq_core::{parse, Ctx, Definitions, RcIter, Val};
+use anyhow::{Context, Result};
+use jql_runner::runner;
 use serde_json::Value;
 
 use crate::item::Item;
@@ -19,30 +19,14 @@ impl Filter {
         match &self.filter {
             Some(filter) => {
                 let input: Value =
-                    serde_json::from_str(&item).context("failed to parse item as json.")?;
+                    serde_json::from_str(&item).context("failed to parse item as json")?;
 
-                // start out only from core filters,
-                // which do not include filters in the standard library
-                // such as `map`, `select` etc.
-                let defs = Definitions::core();
+                let value = runner::raw(&filter, &input).context("failed to apply filter on item")?;
 
-                // parse the filter in the context of the given definitions
-                let mut errs = Vec::new();
-                let f = parse::parse(filter, parse::main()).0.unwrap();
-                let f = defs.finish(f, Vec::new(), &mut errs);
-
-                let inputs = RcIter::new(core::iter::empty());
-
-                // iterator over the output values
-                let mut out = f.run(Ctx::new([], &inputs), Val::from(input));
-
-                match out.next() {
-                    Some(Ok(val)) => Ok(Item {
-                        key: val.to_string().trim_matches('"').to_string(),
-                        value: item,
-                    }),
-                    _ => bail!("found no value when applying filter."),
-                }
+                Ok(Item {
+                    key: value.to_string().trim_matches('"').to_string(),
+                    value: item
+                })
             }
             None => Ok(Item {
                 key: item.clone(),
